@@ -1,0 +1,20 @@
+{
+  "name": "visioone",
+  "version": "0.1.0",
+  "description": "Integrate the VisioOne indoor mapping SDK (@visioglobe/visioone) into a web project, and migrate VisioWeb, VisioWeb Essential and VisioMove Essential V2 apps to VisioOne.",
+  "author": {
+    "name": "Visioglobe",
+    "url": "https://www.visioglobe.com"
+  },
+  "homepage": "https://my.visioglobe.com/docs/VisioOne/docs/index.html",
+  "repository": "https://github.com/visioglobe-sas/visioone-ai",
+  "license": "Apache-2.0",
+  "keywords": [
+    "visioone",
+    "visioglobe",
+    "indoor-mapping",
+    "wayfinding",
+    "sdk",
+    "migration"
+  ]
+}
