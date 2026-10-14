@@ -733,7 +733,8 @@ if (view.currentBuilding) venue.translator.translateBuilding(view.currentBuildin
 venue.translator.addLocale('es', {
   'search-for-anything': 'Buscar cualquier cosa', // built-in UI key (LocaleUIStrings)
   'until': 'hasta {{ time }}',                     // keep required placeholders
-  'turnRight': 'Gire a la derecha',                // navigation maneuver key
+  'maneuvers.turnRight': 'Gire a la derecha',      // navigation keys: dotted path, see gotcha
+  'detailedInstructions.goStraightWithDuration': 'Siga recto durante {{ duration }}',
   'welcome': 'Bienvenido',                         // your own app key
 });
 venue.translator.translate('welcome', 'es');       // 'Bienvenido'
@@ -743,6 +744,14 @@ await venue.setCurrentLocale('es');
 venue.translator.removeLocale('es');
 ```
 Gotchas:
+- **Navigation strings need dotted keys.** `NavigationInstructionsStrings` is typed as nested objects
+  (`maneuvers`, `modalities`, `duration`, `detailedInstructions`), but `addLocale` ignores nested objects:
+  pass `'maneuvers.turnRight'`, `'detailedInstructions.goUp'`, `'modalities.lift'`, etc. A bare `'turnRight'`
+  is stored but never used by navigation. UI keys (`LocaleUIStrings`) are flat (`'go-there'`). Checked at
+  runtime on 1.1.0 (2026-10-14); older docs show the nested form, which silently does nothing.
+- 1.1.0 generates `detailedInstructions.goStraightWithDurationThenEnterBuilding` / `…ThenExitBuilding` keys
+  for the new maneuvers, but the built-in English locale has no string for them (the raw key is displayed).
+  Provide them in your own locale if your venue has building entrances.
 - In memory only (lost on reload). Re-add it after each `loadVenue`.
 - It never translates POI/floor/building/category names: those come from the map authored in VisioMapEditor.
 - Placeholders are mandatory in some keys: `poi-info-placeholder-1` (`{{ distance }} {{ duration }}`),
