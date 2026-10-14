@@ -2,7 +2,7 @@
 
 Official Visioglobe plugins for AI coding assistants. They help you integrate the [VisioOne](https://www.npmjs.com/package/@visioglobe/visioone) indoor mapping SDK into your project, and migrate existing apps from legacy Visioglobe SDKs.
 
-> **Status: draft, not published yet.** `migrate-to-visioone` only produces an inventory and a migration plan until its mapping table ships.
+> **Status: preview, not published yet.** Targets VisioOne 1.0.9. The migration notes are in French until the English migration guide is published.
 
 ## Skills
 

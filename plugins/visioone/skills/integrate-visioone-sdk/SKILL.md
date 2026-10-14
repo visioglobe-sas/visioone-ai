@@ -20,11 +20,18 @@ Once the package is installed, its TypeScript declarations (`node_modules/@visio
 
 If information you need (map hash, custom map server URL, authorization token) is not in these sources, ask the user instead of making it up.
 
+## Bundled references
+
+Read the relevant section before writing code for a feature. Do not load whole files when one section is enough.
+
+- `references/api-recipes.md`: task-oriented recipes checked against the 1.0.9 declarations: loading and view, camera, POI search and events, highlighting, runtime POIs, floors and explore mode, routing (accessible, multi-destination, step-by-step, restyling, kiosk origin, rerouting), images/labels/markers/lines/surfaces, UI parts and theming, localization, custom data, position tracking and geofencing, occupancy, map server and URL parameters. Section 12 is a checklist of cross-cutting pitfalls.
+- `references/mobile-webview.md`: embedding VisioOne in a native app (Android, iOS, Flutter, React Native): how to package the web bundle, the native↔JS bridge contract, a minimal skeleton per platform and platform-specific pitfalls.
+
 ## Steps
 
 1. **Understand the target project**
    - Detect the package manager (`package.json`: npm, pnpm or yarn) and the framework (vanilla, React, Vue…).
-   - VisioOne is a browser SDK. If the project is not a web JS/TS project, ask for confirmation before going further. For a native mobile app, the supported approach is to embed VisioOne in a WebView with a native↔JS bridge — say so and ask how to proceed.
+   - VisioOne is a browser SDK. For a native mobile app (Android, iOS, Flutter, React Native), the supported approach is to embed VisioOne in a WebView with a native↔JS bridge: follow `references/mobile-webview.md`. For any other kind of project, ask for confirmation before going further.
    - If the project is empty, ask which framework to use.
 
 2. **Confirm before installing**
@@ -38,9 +45,12 @@ If information you need (map hash, custom map server URL, authorization token) i
    import { createVisioOne } from '@visioglobe/visioone';
 
    const visioOne = createVisioOne();
-   const venue = await visioOne.loadVenue({ vg_maphash: import.meta.env.VITE_VISIOONE_MAP_HASH });
+   // Read the hash the way the project reads its other settings (Vite shown here).
+   const venue = await visioOne.loadVenue({ vg_maphash: import.meta.env.VITE_VISIOONE_MAP_HASH }, container);
    const view = await visioOne.createView(container, venue);
    ```
+
+   The container needs an explicit height, otherwise nothing is visible.
 
    - Read the map hash from an environment variable, never hard-code it. Add the variable to `.env.example` if that file exists.
    - Only add `baseURL` (custom map server) or an authorization token if the user says their map needs them.
@@ -54,7 +64,8 @@ If information you need (map hash, custom map server URL, authorization token) i
 
 - **The map identifier is `vg_maphash`** since 1.0.6, both as a `loadVenue()` option and as a URL parameter (`?vg_maphash=...`). There is no alias: `loadVenue({ hash })` fails with `Cannot load the venue`. Older code samples still use `hash`.
 - **`createView()` can fail on some maps** with `TypeError: Cannot read properties of undefined (reading 'labelSizePolicy')` even though `loadVenue()` succeeded. Always test `createView()` against the user's real map. If this error occurs, tell the user to contact Visioglobe. Do not try to work around it in code.
-- **TypeScript strict mode**: the declarations type a second `loadVenue` parameter (`loaderContainer: HTMLElement`) as non-optional, even though a single argument works at runtime. In a strict TS project, pass it explicitly.
+- **TypeScript typing**: the package root types are incomplete in 1.0.9 (`createVisioOne()` resolves to `any`, other types are not exported from the root). Use type-only deep imports as shown in `references/api-recipes.md` section 0. The declarations also type a second `loadVenue` parameter (`loaderContainer: HTMLElement`) as non-optional, even though a single argument works at runtime: pass the map container.
+- **Error classes are not exported**: `instanceof` checks are impossible, compare `error.constructor.name` instead.
 - **`view.goToFloor(...)` is optional** since 1.0.6 but still the way to choose the starting floor.
 - **Custom data is not loaded by `loadVenue()`**: call `await venue.refreshCustomData()` once before `venue.getPOICustomData(poi)`, otherwise it returns `{}`. `refreshCustomData()` rejects if the map has no published custom data, so wrap it in `try/catch`. Custom data is read-only and its values are always strings.
 - **Positions are always geographic** (`{ latitude, longitude, altitude? }`, WGS84), never local `{x, y}` map coordinates.
