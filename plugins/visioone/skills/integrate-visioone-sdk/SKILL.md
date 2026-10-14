@@ -7,7 +7,7 @@ description: Integrates the VisioOne SDK (Visioglobe) into the current web proje
 
 VisioOne is Visioglobe's web SDK (JavaScript/TypeScript) for loading and exploring 3D maps built with VisioMapEditor: POI management, multimodal routing, customizable markers and a fully overridable UI.
 
-This skill targets **`@visioglobe/visioone` 1.0.9**. If the project already uses another version, read that version's changelog before applying the notes below.
+This skill targets **`@visioglobe/visioone` 1.1.0**. If the project already uses another version, read that version's changelog before applying the notes below.
 
 ## Official sources (use only these, never guess others)
 
@@ -24,7 +24,7 @@ If information you need (map hash, custom map server URL, authorization token) i
 
 Read the relevant section before writing code for a feature. Do not load whole files when one section is enough.
 
-- `references/api-recipes.md`: task-oriented recipes checked against the 1.0.9 declarations: loading and view, camera, POI search and events, highlighting, runtime POIs, floors and explore mode, routing (accessible, multi-destination, step-by-step, restyling, kiosk origin, rerouting), images/labels/markers/lines/surfaces, UI parts and theming, localization, custom data, position tracking and geofencing, occupancy, map server and URL parameters. Section 12 is a checklist of cross-cutting pitfalls.
+- `references/api-recipes.md`: task-oriented recipes checked against the 1.1.0 declarations: loading and view, camera, POI search and events, highlighting, runtime POIs, floors and explore mode, routing (accessible, multi-destination, step-by-step, restyling, custom navigation markers, kiosk origin, rerouting), images/labels/markers/lines/surfaces, UI parts and theming, localization, custom data, position tracking and geofencing, occupancy, map server and URL parameters. Section 12 is a checklist of cross-cutting pitfalls.
 - `references/mobile-webview.md`: embedding VisioOne in a native app (Android, iOS, Flutter, React Native): how to package the web bundle, the native↔JS bridge contract, a minimal skeleton per platform and platform-specific pitfalls.
 
 ## Steps
@@ -60,14 +60,16 @@ Read the relevant section before writing code for a feature. Do not load whole f
 
 6. **Summarize**: what was installed and generated, what the user still has to provide (map hash, etc.), and any limitation you hit.
 
-## Known pitfalls (VisioOne 1.0.6 → 1.0.9)
+## Known pitfalls (VisioOne 1.0.6 → 1.1.0)
 
 - **The map identifier is `vg_maphash`** since 1.0.6, both as a `loadVenue()` option and as a URL parameter (`?vg_maphash=...`). There is no alias: `loadVenue({ hash })` fails with `Cannot load the venue`. Older code samples still use `hash`.
-- **`createView()` can fail on some maps** with `TypeError: Cannot read properties of undefined (reading 'labelSizePolicy')` even though `loadVenue()` succeeded. Always test `createView()` against the user's real map. If this error occurs, tell the user to contact Visioglobe. Do not try to work around it in code.
-- **TypeScript typing**: the package root types are incomplete in 1.0.9 (`createVisioOne()` resolves to `any`, other types are not exported from the root). Use type-only deep imports as shown in `references/api-recipes.md` section 0. The declarations also type a second `loadVenue` parameter (`loaderContainer: HTMLElement`) as non-optional, even though a single argument works at runtime: pass the map container.
+- **`createView()` can fail on some maps** (since 1.0.6; the code involved is unchanged in 1.1.0) with `TypeError: Cannot read properties of undefined (reading 'labelSizePolicy')` even though `loadVenue()` succeeded. Always test `createView()` against the user's real map. If this error occurs, tell the user to contact Visioglobe. Do not try to work around it in code.
+- **TypeScript typing**: the package root types are incomplete (1.0.9 and 1.1.0) (`createVisioOne()` resolves to `any`, other types are not exported from the root). Use type-only deep imports as shown in `references/api-recipes.md` section 0. The declarations also type a second `loadVenue` parameter (`loaderContainer: HTMLElement`) as non-optional, even though a single argument works at runtime: pass the map container.
 - **Error classes are not exported**: `instanceof` checks are impossible, compare `error.constructor.name` instead.
 - **`view.goToFloor(...)` is optional** since 1.0.6 but still the way to choose the starting floor.
 - **Custom data is not loaded by `loadVenue()`**: call `await venue.refreshCustomData()` once before `venue.getPOICustomData(poi)`, otherwise it returns `{}`. `refreshCustomData()` rejects if the map has no published custom data, so wrap it in `try/catch`. Custom data is read-only and its values are always strings.
+- **Upgrading from 1.0.9 to 1.1.0**: the built-in UI string key `go` is now `go-there`, and custom navigation locales need five new keys (`maneuvers.enterBuilding`, `maneuvers.exitBuilding`, `detailedInstructions.goUp`, `goDown`, `changeFloor`). Navigations through several floors now have one more instruction per floor transition: never hard-code instruction indexes.
+- **New in 1.1.0**: `allNavigationAccessible` (load option and View property, or the `accessibleNavigation` URL parameter) forces accessible routes everywhere; `venue.navigationMarkerRenderer` customizes navigation markers. See `references/api-recipes.md` sections 4.2 and 4.6.
 - **Positions are always geographic** (`{ latitude, longitude, altitude? }`, WGS84), never local `{x, y}` map coordinates.
 
 ## Guardrails

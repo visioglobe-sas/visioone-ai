@@ -1,6 +1,6 @@
-# VisioOne web SDK — API recipes (`@visioglobe/visioone` 1.0.9)
+# VisioOne web SDK — API recipes (`@visioglobe/visioone` 1.1.0)
 
-Task-oriented recipes. Every symbol below was checked against the 1.0.9 type declarations
+Task-oriented recipes. Every symbol below was checked against the 1.1.0 type declarations
 (`node_modules/@visioglobe/visioone/dist/src/VisioOne/**.d.ts`). Snippets assume `visioOne`,
 `venue` and `view` from recipe 1.1 are in scope. All positions are WGS84 `{ latitude, longitude, altitude? }`.
 
@@ -20,7 +20,7 @@ import type { NavigationTrace } from '@visioglobe/visioone/dist/src/VisioOne/Nav
 ```
 
 Gotchas:
-- **The package root types are incomplete in 1.0.9.** `dist/src/visioOne.d.ts` imports `VisioOne` from
+- **The package root types are incomplete (still the case in 1.1.0).** `dist/src/visioOne.d.ts` imports `VisioOne` from
   `./VisioOneImplementation/...`, which is not shipped. As a result `createVisioOne()` resolves to `any`
   (or a "cannot find module" error without `skipLibCheck`), and no other type is exported from the root.
   Annotate explicitly (`const visioOne: VisioOne = createVisioOne()`) using **type-only** deep imports
@@ -44,7 +44,7 @@ const container = document.querySelector<HTMLElement>('#map')!;
 
 const venue: Venue = await visioOne.loadVenue({ vg_maphash: 'YOUR_MAP_HASH' }, container);
 const view: View = await visioOne.createView(container, venue);
-console.log(visioOne.version); // '1.0.9'
+console.log(visioOne.version); // '1.1.0'
 ```
 
 Gotchas:
@@ -56,7 +56,7 @@ Gotchas:
 - `createView` **wipes the container's existing content**. Add your own overlays after it resolves.
 - **URL query parameters override code options**: a host page served with `?vg_maphash=<other>` loads that
   other map. Do not serve the host page with query params you do not control (see section 11).
-- **Known 1.0.6–1.0.9 issue**: on some maps `createView()` rejects with
+- **Known issue since 1.0.6 (the code involved is unchanged in 1.1.0)**: on some maps `createView()` rejects with
   `TypeError: Cannot read properties of undefined (reading 'labelSizePolicy')` even though `loadVenue()`
   succeeded. Test `createView` on your real map early.
 - Since 1.0.6 the map renders without an initial `goToFloor` (it was required up to 1.0.5).
@@ -79,7 +79,7 @@ const view2 = await visioOne.createView(container, venue, {
 ```
 
 Gotchas:
-- Older docs show `{ useOrthographicCamera: true }`: **not in 1.0.9**, use `cameraProjection: 'orthographic'`.
+- Older docs show `{ useOrthographicCamera: true }`: **not in the public API** (1.0.9, 1.1.0), use `cameraProjection: 'orthographic'`.
 - `view.cameraProjection` is read-only after creation; recreate the view to change it.
 - Most options also exist as URL parameters (section 11), and URL parameters win.
 
@@ -319,7 +319,7 @@ Gotchas:
   Any visual edit goes through `update{Label,Image,Marker,Line,Surface}`.
 - After `removePOI`, calling `removeLabel` etc. on its elements throws (already gone).
 - A runtime category has no translated name: the default UI does not display it and its search does not find it.
-  Older docs mention `createCategoryLocaleEntry`: **not in 1.0.9**.
+  Older docs mention `createCategoryLocaleEntry`: **not in the public API** (1.0.9, 1.1.0).
 - Runtime POIs cannot carry CustomData (no setter, no `customData` option).
 - `position` must be real WGS84. Malformed positions throw (`"Provided position has a missing latitude"`).
 
@@ -408,7 +408,7 @@ Gotchas:
   `"Cannot get node as RoutingSolver returned undefined."`. Filter pickers.
 - Request options: `type` (`'fastest'` default | `'shortest'`), `isAccessible`, `firstNodeAsIntersection`
   (default false), `mergeFloorChangeInstructions` (default true), `excludedModalities`, `excludedAttributes`.
-- Older docs pass `displayMode` in the request: **not in 1.0.9** (the request has no rendering options,
+- Older docs pass `displayMode` in the request: **not in the public API** (1.0.9, 1.1.0) (the request has no rendering options,
   and `createNavigationTrace` takes none).
 - Route events: `navigationstarted`, `navigationstopped`, `navigationinstructionreached`,
   `navigationtoofarfromtrackedposition` (payload `NavigationEvent`: `navigation?`, `navigationTrace?`, `venue`, `view`).
@@ -421,6 +421,15 @@ const accessible = venue.computeNavigation({ origin: 'A', destination: 'B', isAc
 const noLift = venue.computeNavigation({ origin: 'A', destination: 'B', excludedAttributes: ['lift'] });
 console.log(venue.modalities, venue.attributes); // what this venue actually defines
 ```
+
+To force accessible routes for every navigation, including the ones started from the built-in UI (1.1.0):
+
+```ts
+const v = await visioOne.loadVenue({ vg_maphash: 'YOUR_MAP_HASH', allNavigationAccessible: true }, container);
+view.allNavigationAccessible = true; // can also be toggled at runtime on the View
+```
+
+The `accessibleNavigation` URL parameter does the same and takes precedence over `LoadOptions.allNavigationAccessible`.
 
 Gotchas:
 - `isAccessible` uses the venue's own accessible-route rules authored in VisioMapEditor (not inspectable).
@@ -468,7 +477,11 @@ view.setCurrentNavigationInstruction(nav.instructions[2]);
 
 Gotchas:
 - `detailedInstruction` is localized with the venue's current locale. `maneuverType` is a stable code
-  (`goStraight`, `turnLeft`, `goUp`, `changeFloor`, `waypoint`, `end`, …) to map to your own icons.
+  (`goStraight`, `turnLeft`, `goUp`, `changeFloor`, `enterBuilding`, `exitBuilding` (1.1.0), `waypoint`,
+  `end`, …) to map to your own icons.
+- Since 1.1.0, every navigation through several floors has one more instruction at the start of each
+  floor transition, and the first routing node always generates an instruction. Do not hard-code
+  instruction indexes or counts.
 - `view.currentNavigationInstruction` exists since 1.0.8. Before that, use
   `view.currentNavigationTrace.navigation.instructions[trace.index]`.
 - To replace the built-in panel: `view.setUIPartVisible('navigation', false)`.
@@ -497,12 +510,36 @@ Gotchas:
 - `updateNavigationTrace` has been observed to throw an internal
   `TypeError (reading 'material')` *after* applying the colors. Wrap it in `try/catch`.
 - `displayMode`/`thickness` are readable on the trace but not in `NavigationTraceUpdateOptions`. Older docs
-  list `color`, `overlayColor`, `inactiveColor`, `inactiveOverlayColor` on the trace: **not in 1.0.9**.
+  list `color`, `overlayColor`, `inactiveColor`, `inactiveOverlayColor` on the trace: **not in the public API** (1.0.9, 1.1.0).
 - `sceneElements[i]` contains `lineProgress`, `lineProgressOverlay`, `lineProgressOutline`,
   `lineProgressDisabled`, `lineProgressDisabledOverlay`, `linePreview`, `linePreviewOutline`,
   `linePreviewOverlay`, `dot` (Image), `startMarker?`, `endMarker` (Markers).
 
-### 4.6 Default origin ("You are here" kiosk)
+### 4.6 Custom navigation markers (1.1.0)
+Control the HTML of the markers shown at the start, the end, floor changes, modality changes and waypoints.
+
+```ts
+import type { NavigationMarkerContext } from '@visioglobe/visioone/dist/src/VisioOne/Navigation';
+
+const renderMarker = (ctx: NavigationMarkerContext): HTMLElement => {
+  const el = document.createElement('div');
+  el.className = `nav-marker nav-marker--${ctx.kind}`;
+  if (ctx.kind === 'floorChange') el.textContent = ctx.floorChangeDirection === 'down' ? '↓' : '↑';
+  return el;
+};
+
+venue.navigationMarkerRenderer = renderMarker;                  // every new trace
+const trace = venue.createNavigationTrace(nav, renderMarker);  // nav from 4.1; or one trace only (takes precedence)
+```
+
+Gotchas:
+- `ctx.kind` is `'start' | 'end' | 'floorChange' | 'modalityChange' | 'waypoint'`. `ctx.from` is the
+  instruction the marker is attached to, `ctx.to` the first instruction of the next segment (undefined for `'end'`).
+  `floorChangeDirection` (`'up' | 'down' | 'same'`) is only set for `'floorChange'`.
+- The built-in UI supplies its own default renderer: setting `venue.navigationMarkerRenderer` replaces it.
+  Without any renderer, markers are created as anchors with no content.
+
+### 4.7 Default origin ("You are here" kiosk)
 Pre-fill the origin whenever the user starts a navigation from the UI.
 
 ```ts
@@ -515,7 +552,7 @@ Gotchas:
   does not open the navigation view on load.
 - When no default origin is set and `allowTracking` is true, the latest tracked position is used.
 
-### 4.7 Reroute when the user drifts off the route
+### 4.8 Reroute when the user drifts off the route
 The SDK warns but never recomputes by itself.
 
 ```ts
@@ -555,7 +592,7 @@ venue.removeImage(img);
 ```
 Gotchas: `height` defaults to `width`. On update, `width` alone sets both, and `height` alone has no effect.
 `'flat'`/`'facing'` on runtime images were broken before 1.0.9. An older doc says `url` is relative to an
-`/images` directory without extension: the 1.0.9 types say relative to `baseURL`, so prefer full or data URLs.
+`/images` directory without extension: the types say relative to `baseURL`, so prefer full or data URLs.
 
 ### 5.2 Labels (text in the 3D scene)
 ```ts
@@ -602,7 +639,7 @@ venue.removeLine(line);
 ```
 Gotchas: `displayMode` is `'textured' | 'halo' | 'progress' | 'progressOutline'`. `texture` /
 `animationSpeed` / `textureRepeat` only apply to `'textured'`. The special texture `'#halo'` produces a halo
-line. Older docs list `inactiveColor`: **not in 1.0.9**.
+line. Older docs list `inactiveColor`: **not in the public API** (1.0.9, 1.1.0).
 
 ### 5.5 Surfaces (update only)
 ```ts
@@ -612,7 +649,7 @@ venue.updateSurface(s, { color: 'initial', hoverColor: 'default', selectionColor
 console.log(s.positions, s.isFromBundle, s.isInteractive);
 ```
 Gotchas:
-- **No `createSurface` / `removeSurface` in 1.0.9.** Surfaces are drawn in VisioMapEditor (a
+- **No `createSurface` / `removeSurface` (1.0.9, 1.1.0).** Surfaces are drawn in VisioMapEditor (a
   `SurfaceCreateOptions` file exists in the typings but no method uses it). Draw zones in the editor.
 - Reset sentinels: `color: 'initial'` (bundle color), and `hoverColor`/`selectionColor: 'default'`
   (view-wide color). `undefined` is not a documented reset. An older doc uses `hoverColor: 'initial'`:
@@ -714,9 +751,12 @@ Gotchas:
   `{{ poiName }}`.
 - Typed key lists: `LocaleUIStrings` and `NavigationInstructionsStrings` (`maneuvers`, `modalities`,
   `duration`, `detailedInstructions`) in `dist/src/VisioOne/Content`. Older docs show combined sentence
-  keys such as `goUpThenGoStraight` or `turnLeftThenChangeModality`: **these are not in the 1.0.9
-  `DetailedInstructionsSentences` interface**, which only has `goStraightWithDuration*`, `endAtPOI` and
-  `endAtDefinedPosition`.
+  keys such as `goUpThenGoStraight` or `turnLeftThenChangeModality`: **these are not in the
+  `DetailedInstructionsSentences` interface**, which only has `goStraightWithDuration*`, `goUp`, `goDown`,
+  `changeFloor` (since 1.1.0), `endAtPOI` and `endAtDefinedPosition`.
+- **1.1.0 changes for custom locales**: the UI key `go` was renamed `go-there`; `maneuvers` gained
+  `enterBuilding` and `exitBuilding`; `detailedInstructions` gained `goUp`, `goDown` and `changeFloor`
+  (all with a `{{ floor }}` placeholder). A locale written for 1.0.9 must add these keys.
 - `translate` reads straight from the resource store: the reliable way to verify `addLocale`.
 
 ---
@@ -771,7 +811,7 @@ Gotchas:
 - The SDK provides no positioning: you feed WGS84 positions (indoor positioning system, GPS, simulation).
   No precision circle is shown without `precisionCircleRadius`.
 - No "position changed" event: run your own logic (geofencing, reroute) in your feed callback.
-- While navigating, the dot snaps to the route and progress updates (see 4.7 for drifting).
+- While navigating, the dot snaps to the route and progress updates (see 4.8 for drifting).
 - The built-in compass button (`userTracking` UI part) cycles through off, follow position, and follow
   position + orientation. Any manual camera gesture unlocks it. Other tracking events: `positiontrackingstate`
   (`TrackingEvent.positionTrackingEnabled`).
@@ -861,6 +901,7 @@ Type `URLParameters` lists them. URL values override code options.
 | `accentColor=rgb(252,3,15)`, `textAccentColor=...` | UI colors |
 | `mirrorUI` | POI card on the right, floor/tracking selector on the left |
 | `quality=low` | overrides `ViewCreateOptions.quality` |
+| `accessibleNavigation` | every navigation uses an accessible path when available (1.1.0, overrides `LoadOptions.allNavigationAccessible`) |
 
 Gotchas: `vg_maphash` also works as a URL parameter (not part of the `URLParameters` type) and **overrides
 the hash in code**. Through 1.0.5 the generic name `hash` could be hijacked by third-party query params
@@ -871,8 +912,9 @@ the hash in code**. Through 1.0.5 the generic name `hash` could be hijacked by t
 ## 12. Cross-cutting pitfalls (checklist)
 
 1. `vg_maphash`, not `hash`. Pass a `loaderContainer` in strict TS.
-2. Root typings broken in 1.0.9: use type-only deep imports. Error classes cannot be imported: use `constructor.name`.
-3. Test `createView` on your real map (`labelSizePolicy` issue, 1.0.6–1.0.9).
+2. Root typings broken (1.0.9 and 1.1.0): use type-only deep imports. Error classes cannot be imported: use `constructor.name`.
+3. Test `createView` on your real map (`labelSizePolicy` issue since 1.0.6, code unchanged in 1.1.0).
+14. Upgrading a custom locale to 1.1.0: the UI key `go` became `go-there`, and five navigation keys were added (see 7.3).
 4. `goToFloor(poi.floor)` before `goToPOI`. Sync floor UI only from `currentfloorchanged.newFloor`.
 5. POI = container. No name/position fields. Filter non-navigable POIs from route pickers.
 6. Reset sentinels: `color: 'initial'`, `hoverColor/selectionColor: 'default'`.
@@ -886,7 +928,15 @@ the hash in code**. Through 1.0.5 the generic name `hash` could be hijacked by t
     (`dist/visioone.umd.cjs`) or serve from an HTTP(S) origin.
 
 <!-- VERIFICATION
-Checked against @visioglobe/visioone 1.0.9, dist/src/ (paths relative to dist/src/VisioOne/ unless noted).
+Checked against @visioglobe/visioone 1.1.0, dist/src/ (paths relative to dist/src/VisioOne/ unless noted).
+Re-check 2026-10-14: all ```ts snippets recompiled with tsc 5.6 (strict, skipLibCheck) against 1.1.0: 0 errors;
+negative test still rejects hash, NavigationRequest.displayMode and a wrong createNavigationTrace renderer.
+1.1.0 additions: Venue/LoadOptions.d.ts allNavigationAccessible ; View/View.d.ts allNavigationAccessible ;
+Venue/URLParameters.d.ts accessibleNavigation ; Venue/Venue.d.ts navigationMarkerRenderer, createNavigationTrace(navigation, renderer?) ;
+Navigation/NavigationMarkerContext.d.ts kind, from, to, floorChangeDirection, NavigationMarkerRenderer ;
+Navigation/ManeuverType.d.ts enterBuilding, exitBuilding ; Content/NavigationInstructionsStrings.d.ts maneuvers.enterBuilding/exitBuilding,
+detailedInstructions.goUp/goDown/changeFloor ; Content/LocaleUIStrings.d.ts 'go' renamed 'go-there'.
+Original check (1.0.9) below.
 All ```ts snippets were extracted and compiled with tsc (strict, skipLibCheck) against these .d.ts: 0 errors.
 Negative test confirmed tsc rejects: hash, useOrthographicCamera, inactiveColor, LabelUpdateOptions.rotation,
 NavigationRequest.displayMode, getPOIById. Root import: createVisioOne() is `any` with skipLibCheck, TS2307 without.
