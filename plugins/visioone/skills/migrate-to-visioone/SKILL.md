@@ -7,11 +7,11 @@ description: Migrates an existing app from a legacy Visioglobe SDK (VisioWeb, Vi
 
 > **Preview (v0.1).** The mapping notes in `references/migration-map.json` are still in French, the language of the migration guide until its English version is published. Translate them for the user when you quote them.
 
-This skill targets **`@visioglobe/visioone` 1.0.9**. It covers VisioWeb, VisioWeb Essential and VisioMove Essential **V2** (`VMEMapController`). VisioMove Essential 1.x (`VMEMapView`) is out of scope: say so if you find it.
+This skill targets **`@visioglobe/visioone` 1.1.0**. It covers VisioWeb, VisioWeb Essential and VisioMove Essential **V2** (`VMEMapController`). VisioMove Essential 1.x (`VMEMapView`) is out of scope: say so if you find it.
 
 ## Sources (use only these)
 
-- `references/migration-map.json`: 620 entries, one per public API element of the legacy SDKs (`sdk`: `visioweb`, `visioweb-essential`, `visiomove-essential-v2`), with its VisioOne 1.0.9 equivalent (`visioone`, `null` when there is none), a `status`, a `note` explaining the mapping and `guide`, the migration guide sections that detail it. Statuses:
+- `references/migration-map.json`: 620 entries, one per public API element of the legacy SDKs (`sdk`: `visioweb`, `visioweb-essential`, `visiomove-essential-v2`), with its VisioOne equivalent (established on 1.0.9 by the guide, every cited symbol re-checked against the 1.1.0 declarations) (`visioone`, `null` when there is none), a `status`, a `note` explaining the mapping and `guide`, the migration guide sections that detail it. Statuses:
   - `direct`: same role, simple rename;
   - `different`: covered by an API of a different shape (other carrier object, other signature, promise or exception instead of a callback…);
   - `workaround`: no dedicated API, but the need can be rebuilt with the public API (the note says how);

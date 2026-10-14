@@ -1,6 +1,6 @@
 # Embedding VisioOne in a mobile app (WebView + native↔JS bridge)
 
-VisioOne (`@visioglobe/visioone`, 1.0.9) is a JS/WebGL SDK. There is **no native iOS/Android/Flutter/RN SDK**:
+VisioOne (`@visioglobe/visioone`, 1.1.0) is a JS/WebGL SDK. There is **no native iOS/Android/Flutter/RN SDK**:
 every mobile integration hosts a small HTML page that runs the SDK inside a WebView, and the app talks
 to it through a bridge. The SDK API inside the page is exactly the web API
 (`createVisioOne()` → `loadVenue()` → `createView()`); there is no "mobile variant".
@@ -29,7 +29,7 @@ cross the bridge).
 | Android (native) | ESM, bundled with **Vite** (`base: './'`, `outDir` = `app/src/main/assets/www`) | Build output committed in `assets/www/`; rebuild manually with `npm run build` (Gradle does not run it) | `WebViewAssetLoader` → `https://appassets.androidx.local/assets/www/index.html?vg_maphash=…` |
 | iOS (native) | **UMD** `dist/visioone.umd.cjs` (~5 MB, CSS/assets inlined), vendored as-is, no bundler | `WebContent/` **folder reference** (not a group) next to `map.html` | `webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())` |
 | Flutter | **UMD** `visioone.umd.cjs`, vendored | `assets/www/` declared in `pubspec.yaml` | `WebViewController.loadFlutterAsset('assets/www/map.html')` |
-| React Native | ESM, `import()`-ed at runtime from the public CDN (`https://cdn.visioglobe.com/visioone/1.0.9/dist/visioone.js`) | HTML shipped as a TS template-literal string | `<WebView source={{ html, baseUrl: 'https://cdn.visioglobe.com/' }} />` |
+| React Native | ESM, `import()`-ed at runtime from the public CDN (`https://cdn.visioglobe.com/visioone/1.1.0/dist/visioone.js`) | HTML shipped as a TS template-literal string | `<WebView source={{ html, baseUrl: 'https://cdn.visioglobe.com/' }} />` |
 
 Why: the ESM build (`dist/visioone.js`) is a tiny entry that dynamically `import()`s large chunks.
 Under `file://`, WebKit (and Chromium) block ES-module loading for CORS reasons, so the map silently
@@ -43,7 +43,7 @@ never loads. Two working answers:
 To refresh the vendored UMD bundle:
 
 ```bash
-npm pack @visioglobe/visioone@1.0.9
+npm pack @visioglobe/visioone@1.1.0
 tar xzf visioglobe-visioone-*.tgz
 cp package/dist/visioone.umd.cjs <web-assets-dir>/visioone.umd.cjs
 ```
@@ -513,7 +513,7 @@ Page (inline string, ESM from CDN):
 <div id="content" style="height:100vh"></div>
 <script type="module">
   // Register the listener BEFORE the async import resolves, or the first 'setup' can be lost.
-  const visioOneReady = import('https://cdn.visioglobe.com/visioone/1.0.9/dist/visioone.js')
+  const visioOneReady = import('https://cdn.visioglobe.com/visioone/1.1.0/dist/visioone.js')
     .then(({ createVisioOne }) => createVisioOne());
   let venue = null, view = null;
   const sendToNative = (evt) => window.ReactNativeWebView?.postMessage(JSON.stringify(evt));

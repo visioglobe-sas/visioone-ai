@@ -1,6 +1,6 @@
 {
   "name": "visioone",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Integrate the VisioOne indoor mapping SDK (@visioglobe/visioone) into a web project, and migrate VisioWeb, VisioWeb Essential and VisioMove Essential V2 apps to VisioOne.",
   "author": {
     "name": "Visioglobe",
