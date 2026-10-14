@@ -1,22 +1,21 @@
 # References
 
-This folder will contain `migration-map.json`: the machine-readable table of legacy API symbols (VisioWeb, VisioWeb Essential, VisioMove Essential V2) and their VisioOne equivalents.
+`migration-map.json` is the machine-readable table of the public API of the legacy SDKs (VisioWeb, VisioWeb Essential, VisioMove Essential V2) and of their VisioOne equivalents.
 
-Rules for its content:
+- It is **generated** from the API correspondence appendix of the public VisioOne migration guide by `scripts/build_migration_map.py`. Never edit it by hand: fix the guide, then regenerate.
+- The generator checks every VisioOne symbol written as code against the TypeScript declarations of the targeted `@visioglobe/visioone` version, and fails if one is missing.
+- `note` fields are in French, the guide's current language. They will switch to English when the English guide is published.
 
-- It is generated from the public VisioOne migration guide (API correspondence appendix). It is never edited by hand and never contains a mapping that the public guide does not document.
-- Every entry links to the guide section that justifies it.
-- Every VisioOne symbol it cites is checked against the TypeScript declarations of the targeted `@visioglobe/visioone` version.
-
-Expected entry shape (draft):
+Entry shape:
 
 ```json
 {
   "sdk": "visioweb | visioweb-essential | visiomove-essential-v2",
-  "legacy": "Mapviewer.initialize",
-  "visioone": "VisioOne.loadVenue + VisioOne.createView",
-  "status": "direct | partial | absent | integrator",
-  "since": "1.0.0",
-  "guide": "https://my.visioglobe.com/docs/VisioOne/docs/..."
+  "section": "Legacy API area (appendix heading)",
+  "legacy": "Mapviewer.initialize(mapDiv, parameters)",
+  "visioone": "visioOne.loadVenue(options) puis visioOne.createView(container, venue, options?)",
+  "status": "direct | different | workaround | none | not-applicable",
+  "note": "Explanation of the mapping",
+  "guide": ["Migration Web §2.2"]
 }
 ```
