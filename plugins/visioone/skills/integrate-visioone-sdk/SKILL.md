@@ -22,7 +22,7 @@ This skill targets **`@visioglobe/visioone` 1.1.0**. If the project already uses
   - Flutter (Dart), `webview_flutter`: https://github.com/visioglobe-sas/VisioOneMeetFlutter
   - React Native, `react-native-webview`: https://github.com/visioglobe-sas/VisioOneMeetReactNative
 
-  They show working patterns, not API guarantees: the SDK version they use may differ from the one targeted here, so still check every symbol against the declarations.
+  They show working patterns, not API guarantees: check the SDK version each repo pins, and still check every symbol against the declarations.
 
 Once the package is installed, its TypeScript declarations (`node_modules/@visioglobe/visioone`) are the authoritative API surface. Check every method, option and event you use against them. If something is not declared there, do not use it.
 

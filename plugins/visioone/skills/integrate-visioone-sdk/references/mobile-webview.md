@@ -16,8 +16,8 @@ the project for anything this file only sketches):
 | React Native (`react-native-webview`) | https://github.com/visioglobe-sas/VisioOneMeetReactNative | SDK from the CDN (ESM) |
 
 The same features without a WebView (SDK running directly in the DOM): https://github.com/visioglobe-sas/VisioOneMeetVueJS.
-Each repo documents its features one by one in `docs/features/*.md`. The repos currently use SDK 1.0.9:
-when they differ from this file, this file (checked against 1.1.0) wins on API, the repo on platform plumbing.
+Each repo documents its features one by one in `docs/features/*.md`. Check the SDK version a repo pins
+before reusing its code: if it differs from the targeted one, the TypeScript declarations win on API.
 
 ---
 
@@ -40,7 +40,7 @@ cross the bridge).
 | Android (native) | ESM, bundled with **Vite** (`base: './'`, `outDir` = `app/src/main/assets/www`) | Build output committed in `assets/www/`; rebuild manually with `npm run build` (Gradle does not run it) | `WebViewAssetLoader` → `https://appassets.androidx.local/assets/www/index.html?vg_maphash=…` |
 | iOS (native) | **UMD** `dist/visioone.umd.cjs` (~8 MB, CSS/assets inlined), vendored as-is, no bundler | `WebContent/` **folder reference** (not a group) next to `map.html` | `webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())` |
 | Flutter | **UMD** `visioone.umd.cjs`, vendored | `assets/www/` declared in `pubspec.yaml` | `WebViewController.loadFlutterAsset('assets/www/map.html')` |
-| React Native | ESM, `import()`-ed at runtime from a versioned CDN URL (`https://cdn.visioglobe.com/visioone/<version>/dist/visioone.js`; pin the targeted version, the repo still pins 1.0.9) | HTML shipped as a TS template-literal string | `<WebView source={{ html, baseUrl: 'https://cdn.visioglobe.com/' }} />` |
+| React Native | ESM, `import()`-ed at runtime from the public CDN (`https://cdn.visioglobe.com/visioone/1.1.0/dist/visioone.js`) | HTML shipped as a TS template-literal string | `<WebView source={{ html, baseUrl: 'https://cdn.visioglobe.com/' }} />` |
 
 Why: the ESM build (`dist/visioone.js`) is a tiny entry that dynamically `import()`s large chunks.
 Under `file://`, WebKit (and Chromium) block ES-module loading for CORS reasons, so the map silently
@@ -125,8 +125,9 @@ Notes:
 - `vg_maphash` replaced `hash` in 1.0.6, both as a `loadVenue` option and as a URL parameter. There is
   no alias: an old `hash` key is ignored and loading fails ("Cannot load the venue").
 - The SDK **merges page-URL query params into `loadVenue` options, and the URL wins**
-  (`?vg_maphash=`, `?baseURL=`). Android/iOS pass the hash (and base URL) in the page URL, read them in
-  the page and forward them explicitly to `loadVenue`. Corollary:
+  (`?vg_maphash=`, `?baseURL=`, exact case). Android/iOS pass the hash (and base URL) in the page URL,
+  read them in the page and forward them explicitly to `loadVenue`; Android's `?baseUrl=` key is read
+  only by its page, not by the SDK. Corollary:
   never serve the host page with query params you don't control.
 - `baseURL` defaults to `https://mapserver.visioglobe.com/`; map data is fetched at runtime, so the
   device needs network access. First cold load can take 20–30 s on an emulator (large JS chunk + map
@@ -170,7 +171,7 @@ Notes:
 ### 2.3 Readiness handshake
 
 The SDK is "ready" only after `createView()` resolves. Native must not send map commands before that:
-bridge commands start with a guard (`if (!venue) return;`, plus `!view` when they need the view), so they
+bridge commands check that `venue` (and `view` when they need it) exist before doing anything, so they
 are silent no-ops until loading is done, and native UI
 only enables controls after the `ready` event.
 
