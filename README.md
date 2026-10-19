@@ -26,6 +26,7 @@ Then ask Claude, for example: *"Integrate VisioOne in this project"* or *"Migrat
 
 - VisioOne documentation: https://my.visioglobe.com/docs/VisioOne/docs/index.html
 - API reference: https://my.visioglobe.com/docs/VisioOne/APIdocs/index.html
+- Example integration repos: [Vue 3](https://github.com/visioglobe-sas/VisioOneMeetVueJS), [Android](https://github.com/visioglobe-sas/VisioOneMeetAndroid), [iOS](https://github.com/visioglobe-sas/VisioOneMeetIos), [Flutter](https://github.com/visioglobe-sas/VisioOneMeetFlutter), [React Native](https://github.com/visioglobe-sas/VisioOneMeetReactNative)
 - Support: https://my.visioglobe.com/support
 
 ## License

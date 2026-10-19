@@ -5,8 +5,19 @@ every mobile integration hosts a small HTML page that runs the SDK inside a WebV
 to it through a bridge. The SDK API inside the page is exactly the web API
 (`createVisioOne()` → `loadVenue()` → `createView()`); there is no "mobile variant".
 
-Reference implementations (public example repos): native Android (Kotlin/Compose), native iOS
-(Swift/SwiftUI), Flutter (`webview_flutter`), React Native (`react-native-webview`).
+Reference implementations (public example repos, one complete app per platform; read the one matching
+the project for anything this file only sketches):
+
+| Platform | Repo | SDK in the page |
+|---|---|---|
+| Android (Kotlin, Compose) | https://github.com/visioglobe-sas/VisioOneMeetAndroid | web bundle built with Vite |
+| iOS (Swift, SwiftUI) | https://github.com/visioglobe-sas/VisioOneMeetIos | vendored SDK (UMD) |
+| Flutter (`webview_flutter`) | https://github.com/visioglobe-sas/VisioOneMeetFlutter | vendored SDK (UMD) |
+| React Native (`react-native-webview`) | https://github.com/visioglobe-sas/VisioOneMeetReactNative | SDK from the CDN (ESM) |
+
+The same features without a WebView (SDK running directly in the DOM): https://github.com/visioglobe-sas/VisioOneMeetVueJS.
+Each repo documents its features one by one in `docs/features/*.md`. The repos currently use SDK 1.0.9:
+when they differ from this file, this file (checked against 1.1.0) wins on API, the repo on platform plumbing.
 
 ---
 
@@ -27,9 +38,9 @@ cross the bridge).
 | Platform | SDK build | How it gets into the app | How the page is loaded |
 |---|---|---|---|
 | Android (native) | ESM, bundled with **Vite** (`base: './'`, `outDir` = `app/src/main/assets/www`) | Build output committed in `assets/www/`; rebuild manually with `npm run build` (Gradle does not run it) | `WebViewAssetLoader` → `https://appassets.androidx.local/assets/www/index.html?vg_maphash=…` |
-| iOS (native) | **UMD** `dist/visioone.umd.cjs` (~5 MB, CSS/assets inlined), vendored as-is, no bundler | `WebContent/` **folder reference** (not a group) next to `map.html` | `webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())` |
+| iOS (native) | **UMD** `dist/visioone.umd.cjs` (~8 MB, CSS/assets inlined), vendored as-is, no bundler | `WebContent/` **folder reference** (not a group) next to `map.html` | `webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())` |
 | Flutter | **UMD** `visioone.umd.cjs`, vendored | `assets/www/` declared in `pubspec.yaml` | `WebViewController.loadFlutterAsset('assets/www/map.html')` |
-| React Native | ESM, `import()`-ed at runtime from the public CDN (`https://cdn.visioglobe.com/visioone/1.1.0/dist/visioone.js`) | HTML shipped as a TS template-literal string | `<WebView source={{ html, baseUrl: 'https://cdn.visioglobe.com/' }} />` |
+| React Native | ESM, `import()`-ed at runtime from a versioned CDN URL (`https://cdn.visioglobe.com/visioone/<version>/dist/visioone.js`; pin the targeted version, the repo still pins 1.0.9) | HTML shipped as a TS template-literal string | `<WebView source={{ html, baseUrl: 'https://cdn.visioglobe.com/' }} />` |
 
 Why: the ESM build (`dist/visioone.js`) is a tiny entry that dynamically `import()`s large chunks.
 Under `file://`, WebKit (and Chromium) block ES-module loading for CORS reasons, so the map silently
@@ -114,7 +125,8 @@ Notes:
 - `vg_maphash` replaced `hash` in 1.0.6, both as a `loadVenue` option and as a URL parameter. There is
   no alias: an old `hash` key is ignored and loading fails ("Cannot load the venue").
 - The SDK **merges page-URL query params into `loadVenue` options, and the URL wins**
-  (`?vg_maphash=`, `?baseURL=`). Android/iOS deliberately use this to pass the hash by URL. Corollary:
+  (`?vg_maphash=`, `?baseURL=`). Android/iOS pass the hash (and base URL) in the page URL, read them in
+  the page and forward them explicitly to `loadVenue`. Corollary:
   never serve the host page with query params you don't control.
 - `baseURL` defaults to `https://mapserver.visioglobe.com/`; map data is fetched at runtime, so the
   device needs network access. First cold load can take 20–30 s on an emulator (large JS chunk + map
@@ -151,13 +163,15 @@ Notes:
     are passed as a JSON string (`onPoiClick(JSON.stringify(pois))`).
   - iOS: `{ type, message }` object posted as-is (body arrives as `[String: Any]`; only
     property-list types: always `as?`, never force-cast).
-  - Flutter / RN: `JSON.stringify({ type, data })`; native parses defensively and ignores malformed input.
+  - Flutter / RN: `JSON.stringify({ type, data })`. Flutter parses defensively and ignores malformed
+    input; the RN repo calls `JSON.parse` unguarded: wrap it (see React Native gotchas).
   - The public guide recommends a single `{type, data}` envelope as the default JS→native pattern.
 
 ### 2.3 Readiness handshake
 
 The SDK is "ready" only after `createView()` resolves. Native must not send map commands before that:
-every repo's `MapBridge` methods start with `if (!venue || !view) return;` (silent no-op), and native UI
+bridge commands start with a guard (`if (!venue) return;`, plus `!view` when they need the view), so they
+are silent no-ops until loading is done, and native UI
 only enables controls after the `ready` event.
 
 | Platform | Who starts the load | Ready signal |
@@ -171,7 +185,7 @@ Pitfalls:
 - A native→JS message sent **before the JS listener exists is lost silently**. RN mitigates by
   registering `window.addEventListener('message', ...)` synchronously, *before* the async SDK `import()`
   resolves, and making `setup` `await` that import; the 500 ms delay is a heuristic, not a guarantee.
-  A more robust handshake, used in the React Native skeleton below: the page posts `page_loaded` once its
+  A more robust handshake, used in the React Native skeleton below (not in the repo): the page posts `page_loaded` once its
   listeners exist → native then sends `setup`.
 - Push initial state with `ready` (floors, current floor, explore mode) rather than making native
   query for it; then keep it in sync with SDK events (`currentfloorchanged`, `exploremodechanged`),
@@ -184,6 +198,10 @@ Pitfalls:
 `evaluateJavascript`/`runJavaScript` don't await Promises. Patterns used:
 - **requestId + event**: native calls `MapBridge.loadCustomData(requestId, poiId)`; JS answers with
   `onCustomDataLoaded(requestId, json)` / `{type:'customDataLoaded', data:{requestId, ...}}`.
+- **result event keyed by the object id** (RN): `{type:'poi_custom_data_result', data:{placeId, ...}}`;
+  simpler, but concurrent requests for the same id cannot be told apart.
+- **synchronous return value** (iOS): for non-Promise results, read the value passed to the
+  `evaluateJavaScript` completion handler (`getCategories`, position/polygon lookups).
 - **iOS only**: `callAsyncJavaScript("return await window.MapBridge.loadCustomData(poiId);", arguments: ["poiId": id], in: nil, in: .page)` awaits the Promise, with real JS arguments.
 - Return explicit statuses (`{status:'created'|'duplicate'|'notFound'|'error', message}`) instead of
   letting a JS exception escape.
@@ -198,7 +216,9 @@ Pitfalls:
   `try/catch` in JS and report `{status:'error', message}` / `onNavigationError(msg)`.
 - Native side: log `evaluateJavaScript` completion errors (iOS); wrap `runJavaScript` in `try/catch`
   (Flutter `_run`); parse incoming JSON defensively.
-- Unknown ids are silent no-ops in all repos (no error channel back); add one if your UI needs it.
+- Unknown ids: navigation-style commands (`goTo…`, highlight) silently no-op in all repos; create/resolve
+  commands report a status (`notFound`, `anchor-not-found`, an `…_error` event). Add a channel back
+  wherever your UI needs to know.
 
 ### 2.6 Threading
 
@@ -665,6 +685,7 @@ export function VisioMap({ hash, onPoiClick }: { hash: string; onPoiClick: (pois
 - Props used: `originWhitelist={['*']}`, `javaScriptEnabled`, `domStorageEnabled`,
   `mixedContentMode="compatibility"`, `allowUniversalAccessFromFileURLs`.
 - `react-native-webview` dispatches `postMessage` events on **`window` on iOS but `document` on
-  Android** (with `bubbles: false`), so listen on both.
+  Android** (with `bubbles: false`), so listen on both. The RN example repo only listens on `window`:
+  do not copy that part.
 - Wrap the native-side `JSON.parse(event.nativeEvent.data)` in `try/catch`.
 - Map loading needs network at runtime (SDK from the CDN + map data from the map server).

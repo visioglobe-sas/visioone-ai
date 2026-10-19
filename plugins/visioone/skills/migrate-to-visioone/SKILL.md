@@ -21,6 +21,7 @@ This skill targets **`@visioglobe/visioone` 1.1.0**. It covers VisioWeb, VisioWe
   The file is large: search it (e.g. with `grep` or `jq` on `legacy`) instead of reading it whole.
 - The VisioOne migration guide in the official documentation: https://my.visioglobe.com/docs/VisioOne/docs/index.html
 - `../integrate-visioone-sdk/references/api-recipes.md` (how to write each VisioOne feature correctly) and `../integrate-visioone-sdk/references/mobile-webview.md` (WebView shell and native↔JS bridge for mobile V2 apps).
+- The public example integration repos, to see the target VisioOne app end to end: https://github.com/visioglobe-sas/VisioOneMeetVueJS (web), and for VisioMove Essential V2 apps https://github.com/visioglobe-sas/VisioOneMeetAndroid and https://github.com/visioglobe-sas/VisioOneMeetIos (also https://github.com/visioglobe-sas/VisioOneMeetFlutter and https://github.com/visioglobe-sas/VisioOneMeetReactNative). They are VisioOne apps, not migrations: use them for structure and patterns, never as a source of legacy→VisioOne mappings.
 - The TypeScript declarations of the installed `@visioglobe/visioone` package. They are the authoritative API surface: never write a VisioOne call that is not declared there.
 
 Never use a mapping that is not in `migration-map.json` or the guide. If a legacy call has no entry, treat it as `none`.
