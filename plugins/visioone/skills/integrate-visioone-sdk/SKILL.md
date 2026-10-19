@@ -15,6 +15,14 @@ This skill targets **`@visioglobe/visioone` 1.1.0**. If the project already uses
 - **Documentation** (getting started, samples): https://my.visioglobe.com/docs/VisioOne/docs/index.html
 - **API reference**: https://my.visioglobe.com/docs/VisioOne/APIdocs/index.html
 - **Demo app**: https://cdn.visioglobe.com/visioone/latest/apps/demo/
+- **Example integration repos** (complete, runnable apps, one per platform; start from the one matching the project):
+  - Vue 3 (Vite), SDK in the DOM: https://github.com/visioglobe-sas/VisioOneMeetVueJS
+  - Android (Kotlin, Jetpack Compose), WebView: https://github.com/visioglobe-sas/VisioOneMeetAndroid
+  - iOS (Swift, SwiftUI), WKWebView: https://github.com/visioglobe-sas/VisioOneMeetIos
+  - Flutter (Dart), `webview_flutter`: https://github.com/visioglobe-sas/VisioOneMeetFlutter
+  - React Native, `react-native-webview`: https://github.com/visioglobe-sas/VisioOneMeetReactNative
+
+  They show working patterns, not API guarantees: check the SDK version each repo pins, and still check every symbol against the declarations.
 
 Once the package is installed, its TypeScript declarations (`node_modules/@visioglobe/visioone`) are the authoritative API surface. Check every method, option and event you use against them. If something is not declared there, do not use it.
 
