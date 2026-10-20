@@ -856,7 +856,9 @@
       "visioone": null,
       "status": "none",
       "note": "*Limitations connues*, fiche 3.",
-      "guide": []
+      "guide": [
+        "Limitations connues fiche 3"
+      ]
     },
     {
       "sdk": "visioweb",
@@ -1074,7 +1076,9 @@
       "visioone": "optimize: true, en plaçant tour à tour chaque destination en dernier",
       "status": "workaround",
       "note": "`optimize` garde la dernière destination fixe : comparer les variantes et garder la plus courte (*Limitations connues*, fiche 4).",
-      "guide": []
+      "guide": [
+        "Limitations connues fiche 4"
+      ]
     },
     {
       "sdk": "visioweb",
@@ -1092,7 +1096,9 @@
       "visioone": null,
       "status": "workaround",
       "note": "Calculer vers chaque candidat et garder le plus court (*Limitations connues*, fiche 4).",
-      "guide": []
+      "guide": [
+        "Limitations connues fiche 4"
+      ]
     },
     {
       "sdk": "visioweb",
@@ -2037,7 +2043,9 @@
       "visioone": null,
       "status": "none",
       "note": "*Limitations connues*, fiche 3.",
-      "guide": []
+      "guide": [
+        "Limitations connues fiche 3"
+      ]
     },
     {
       "sdk": "visioweb",
@@ -2482,7 +2490,9 @@
       "visioone": "Événement navigationtoofarfromtrackedposition + computeNavigation",
       "status": "workaround",
       "note": "*Limitations connues*, fiche 1.",
-      "guide": []
+      "guide": [
+        "Limitations connues fiche 1"
+      ]
     },
     {
       "sdk": "visioweb",
@@ -2577,7 +2587,7 @@
       "status": "different",
       "note": "Le conteneur est passé à `createView` et doit être un `HTMLElement` (plus de sélecteur texte) ; *Migration Web* §2.2.",
       "guide": [
-        "Migration Web §2.2."
+        "Migration Web §2.2"
       ]
     },
     {
@@ -2651,7 +2661,7 @@
       "status": "different",
       "note": "Deux Promises successives (données puis rendu) ; *Migration Web* §2.2.",
       "guide": [
-        "Migration Web §2.2."
+        "Migration Web §2.2"
       ]
     },
     {
@@ -2707,7 +2717,7 @@
       "status": "different",
       "note": "Modèle `EventTarget` standard, noms d'événements différents ; *Migration Web* §2.8.",
       "guide": [
-        "Migration Web §2.8."
+        "Migration Web §2.8"
       ]
     },
     {
@@ -2745,7 +2755,7 @@
       "status": "different",
       "note": "Notifiés après le changement (pas d'événement « avant ») ; lire `newFloor`/`newBuilding`, *Migration Web* §2.6.",
       "guide": [
-        "Migration Web §2.6."
+        "Migration Web §2.6"
       ]
     },
     {
@@ -2783,7 +2793,7 @@
       "status": "different",
       "note": "Renommé, sans alias ; le paramètre d'URL est prioritaire sur le code, *Migration Web* §2.2.",
       "guide": [
-        "Migration Web §2.2."
+        "Migration Web §2.2"
       ]
     },
     {
@@ -2839,7 +2849,7 @@
       "status": "different",
       "note": "Change la langue de toute la venue (libellés, UI, instructions) ; *Migration Web* §2.9.",
       "guide": [
-        "Migration Web §2.9."
+        "Migration Web §2.9"
       ]
     },
     {
@@ -3021,7 +3031,7 @@
       "status": "different",
       "note": "Le flag PMR remplace la liste d'exclusions dédiée ; *Migration Web* §2.5.",
       "guide": [
-        "Migration Web §2.5."
+        "Migration Web §2.5"
       ]
     },
     {
@@ -3095,7 +3105,7 @@
       "status": "different",
       "note": "Pas d'index par id : énumérer les étages côté application, *Migration Web* §2.7.",
       "guide": [
-        "Migration Web §2.7."
+        "Migration Web §2.7"
       ]
     },
     {
@@ -3115,7 +3125,7 @@
       "status": "different",
       "note": "Voir le comportement après `goToPOI` sans `goToFloor`, *Migration Web* §2.6.",
       "guide": [
-        "Migration Web §2.6."
+        "Migration Web §2.6"
       ]
     },
     {
@@ -3216,7 +3226,7 @@
       "status": "different",
       "note": "Pas de paramètre `radius` ; appeler `goToFloor` avant, *Migration Web* §2.6.",
       "guide": [
-        "Migration Web §2.6."
+        "Migration Web §2.6"
       ]
     },
     {
@@ -3272,7 +3282,7 @@
       "status": "different",
       "note": "La fiche POI native remplace la bulle ; *Migration Web* §2.1.",
       "guide": [
-        "Migration Web §2.1."
+        "Migration Web §2.1"
       ]
     },
     {
@@ -3292,7 +3302,7 @@
       "status": "different",
       "note": "Seul l'identifiant est créé ; nom et icône restent côté application, *Migration Web* §2.12.",
       "guide": [
-        "Migration Web §2.12."
+        "Migration Web §2.12"
       ]
     },
     {
@@ -3440,7 +3450,7 @@
       "status": "different",
       "note": "Inclut des entrées non navigables à filtrer, *Migration Web* §2.6.",
       "guide": [
-        "Migration Web §2.6."
+        "Migration Web §2.6"
       ]
     },
     {
@@ -3476,9 +3486,9 @@
       "legacy": "accessible",
       "visioone": "NavigationRequest.isAccessible",
       "status": "different",
-      "note": "Passé à chaque calcul, `false` par défaut dans les deux SDK ; *Migration Web* §2.5.",
+      "note": "Passé à chaque calcul, `false` par défaut dans les deux SDK (*(depuis v1.1.0)* s'il est omis, VisioOne suit `view.allNavigationAccessible` / `?accessibleNavigation`) ; *Migration Web* §2.5.",
       "guide": [
-        "Migration Web §2.5."
+        "Migration Web §2.5"
       ]
     },
     {
@@ -3507,7 +3517,7 @@
       "status": "different",
       "note": "Plus d'état stocké : origine et destination sont fournies ensemble, *Migration Web* §2.13.",
       "guide": [
-        "Migration Web §2.13."
+        "Migration Web §2.13"
       ]
     },
     {
@@ -3526,7 +3536,9 @@
       "visioone": "venue.computeNavigationMultiDestination({ origin, destinations, optimize })",
       "status": "different",
       "note": "Ordre optimisé ou non via le booléen `optimize` ; pas de stratégie `closest` (*Limitations connues*, fiche 4).",
-      "guide": []
+      "guide": [
+        "Limitations connues fiche 4"
+      ]
     },
     {
       "sdk": "visioweb-essential",
@@ -3550,7 +3562,7 @@
       "sdk": "visioweb-essential",
       "section": "Route (module essential.route)",
       "legacy": "Échec de calcul (exception sous forme de chaîne)",
-      "visioone": "Exception RouteNotFoundError, POINotFoundError, InvalidNavigationRequestError…",
+      "visioone": "Exception InvalidNavigationRequestError (aucun itinéraire, y compris origine = destination), POINotFoundError…",
       "status": "different",
       "note": "Classes non exportées : comparer `error.constructor.name`, *Migration Web* §2.5 et §2.11.",
       "guide": [
@@ -3655,7 +3667,7 @@
       "status": "different",
       "note": "Ressources de traduction gérées par clés ; *Migration Web* §2.9.",
       "guide": [
-        "Migration Web §2.9."
+        "Migration Web §2.9"
       ]
     },
     {
@@ -3684,7 +3696,7 @@
       "status": "different",
       "note": "Le contrôleur unique est remplacé par le triptyque `createVisioOne()` → `loadVenue()` → `createView()` ; *Migration Mobile* §3.3.",
       "guide": [
-        "Migration Mobile §3.3."
+        "Migration Mobile §3.3"
       ]
     },
     {
@@ -3714,7 +3726,9 @@
       "visioone": null,
       "status": "none",
       "note": "Aucune option publique de chargement d'une carte embarquée dans l'application ; voir *Limitations connues*, fiche 2.",
-      "guide": []
+      "guide": [
+        "Limitations connues fiche 2"
+      ]
     },
     {
       "sdk": "visiomove-essential-v2",
@@ -3804,7 +3818,9 @@
       "visioone": null,
       "status": "none",
       "note": "Pas d'API de gestion de cache de cartes ; *Limitations connues*, fiche 2.",
-      "guide": []
+      "guide": [
+        "Limitations connues fiche 2"
+      ]
     },
     {
       "sdk": "visiomove-essential-v2",
@@ -3868,7 +3884,7 @@
       "status": "not-applicable",
       "note": "Pas d'API VisioOne dédiée : c'est la WebView qui suspend le rendu ; *Migration Mobile* §3.3.",
       "guide": [
-        "Migration Mobile §3.3."
+        "Migration Mobile §3.3"
       ]
     },
     {
@@ -3942,7 +3958,7 @@
       "status": "different",
       "note": "*Migration Mobile* §3.8.",
       "guide": [
-        "Migration Mobile §3.8."
+        "Migration Mobile §3.8"
       ]
     },
     {
@@ -4070,7 +4086,7 @@
       "status": "different",
       "note": "Les identifiants deviennent des objets (`venue.venueLayout.buildings`, `building.floors`) ; *Migration Mobile* §3.6.",
       "guide": [
-        "Migration Mobile §3.6."
+        "Migration Mobile §3.6"
       ]
     },
     {
@@ -4081,7 +4097,7 @@
       "status": "different",
       "note": "Faire `goToFloor(poi.floor)` avant `goToPOI(poi)` pour un POI d'un autre étage ; *Migration Mobile* §3.6.",
       "guide": [
-        "Migration Mobile §3.6."
+        "Migration Mobile §3.6"
       ]
     },
     {
@@ -4092,7 +4108,7 @@
       "status": "different",
       "note": "Le lot JSON unique devient un POI « éclaté » en éléments graphiques créés un à un ; *Migration Mobile* §3.4.",
       "guide": [
-        "Migration Mobile §3.4."
+        "Migration Mobile §3.4"
       ]
     },
     {
@@ -4240,7 +4256,7 @@
       "status": "different",
       "note": "Recommandé : marker 3D ; un vrai widget natif passe par `isForeignMarker: true` + événement `foreignmarkerupdated` relayé au natif ; *Migration Mobile* §3.4.",
       "guide": [
-        "Migration Mobile §3.4."
+        "Migration Mobile §3.4"
       ]
     },
     {
@@ -4296,7 +4312,7 @@
       "status": "different",
       "note": "Appel synchrone qui lève une erreur au lieu d'un callback ; l'affichage est une étape explicite ; *Migration Mobile* §3.5.",
       "guide": [
-        "Migration Mobile §3.5."
+        "Migration Mobile §3.5"
       ]
     },
     {
@@ -4351,7 +4367,9 @@
       "visioone": "view.addEventListener('navigationtoofarfromtrackedposition', ...) + nouvel appel à computeNavigation",
       "status": "workaround",
       "note": "Le recalcul n'est pas automatique ; le déclencher côté JS ; *Limitations connues*, fiche 1.",
-      "guide": []
+      "guide": [
+        "Limitations connues fiche 1"
+      ]
     },
     {
       "sdk": "visiomove-essential-v2",
@@ -4433,7 +4451,7 @@
       "status": "direct",
       "note": "*Migration Mobile* §3.7.",
       "guide": [
-        "Migration Mobile §3.7."
+        "Migration Mobile §3.7"
       ]
     },
     {
@@ -4588,7 +4606,7 @@
       "status": "different",
       "note": "La vue native devient la WebView ; *Migration Mobile* §3.1.",
       "guide": [
-        "Migration Mobile §3.1."
+        "Migration Mobile §3.1"
       ]
     },
     {
@@ -4671,7 +4689,7 @@
       "status": "different",
       "note": "Les classes d'erreur ne sont pas exportées : comparer `error.constructor.name` et relayer au natif ; *Migration Mobile* §3.10.",
       "guide": [
-        "Migration Mobile §3.10."
+        "Migration Mobile §3.10"
       ]
     },
     {
@@ -4682,7 +4700,7 @@
       "status": "different",
       "note": "Deux événements au lieu d'un ; ne relayer que `newFloor`/`newBuilding` au natif ; *Migration Mobile* §3.6.",
       "guide": [
-        "Migration Mobile §3.6."
+        "Migration Mobile §3.6"
       ]
     },
     {
@@ -4702,7 +4720,7 @@
       "status": "different",
       "note": "Le retour `Bool` qui interceptait le comportement par défaut n'existe plus : désactiver côté JS (`setUIPartVisible('poiDetails', false)`, `selectionEnabled`) ; *Migration Mobile* §3.8.",
       "guide": [
-        "Migration Mobile §3.8."
+        "Migration Mobile §3.8"
       ]
     },
     {
@@ -4792,7 +4810,7 @@
       "legacy": "VMEComputeRouteCallback.computeRouteDidFail(...) (iOS/Android)",
       "visioone": "try/catch autour de computeNavigation() + error.constructor.name",
       "status": "different",
-      "note": "Ex. `RouteNotFoundError`, `POINotFoundError`, `InvalidNavigationRequestError` ; certaines erreurs restent non typées (*Migration Mobile* §3.5).",
+      "note": "Ex. `InvalidNavigationRequestError` (aucun itinéraire), `POINotFoundError` ; certaines erreurs restent non typées (*Migration Mobile* §3.5).",
       "guide": [
         "Migration Mobile §3.5"
       ]
@@ -5111,7 +5129,7 @@
       "status": "different",
       "note": "Textes localisés via le traducteur ; *Migration Mobile* §3.9.",
       "guide": [
-        "Migration Mobile §3.9."
+        "Migration Mobile §3.9"
       ]
     },
     {
@@ -5329,7 +5347,7 @@
       "status": "direct",
       "note": "*Migration Mobile* §3.5.",
       "guide": [
-        "Migration Mobile §3.5."
+        "Migration Mobile §3.5"
       ]
     },
     {
@@ -5511,7 +5529,7 @@
       "status": "different",
       "note": "Modèle unifié iOS/Android côté VisioOne, à relayer au natif ; *Migration Mobile* §3.10.",
       "guide": [
-        "Migration Mobile §3.10."
+        "Migration Mobile §3.10"
       ]
     },
     {
@@ -5656,7 +5674,9 @@
       "visioone": null,
       "status": "workaround",
       "note": "Calculer vers chaque candidate et garder la plus proche ; *Limitations connues*, fiche 4.",
-      "guide": []
+      "guide": [
+        "Limitations connues fiche 4"
+      ]
     },
     {
       "sdk": "visiomove-essential-v2",

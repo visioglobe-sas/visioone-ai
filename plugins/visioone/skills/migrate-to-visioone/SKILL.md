@@ -5,7 +5,7 @@ description: Migrates an existing app from a legacy Visioglobe SDK (VisioWeb, Vi
 
 # Migrating to VisioOne
 
-> **Preview (v0.1).** The mapping notes in `references/migration-map.json` are still in French, the language of the migration guide until its English version is published. Translate them for the user when you quote them.
+> **Preview.** `references/migration-map.json` is generated from the French migration guide until its English version is published: the `note` and `section` fields, and some `visioone` descriptions (e.g. "… puis …"), are in French. Translate them whenever you quote them to the user or write them into code, comments or plans.
 
 This skill targets **`@visioglobe/visioone` 1.1.0**. It covers VisioWeb, VisioWeb Essential and VisioMove Essential **V2** (`VMEMapController`). VisioMove Essential 1.x (`VMEMapView`) is out of scope: say so if you find it.
 
@@ -39,14 +39,15 @@ Never use a mapping that is not in `migration-map.json` or the guide. If a legac
 3. **Propose a migration plan, by use case**, and wait for the user's approval before changing any file. The plan states:
    - what migrates directly (`direct`);
    - what needs rework (`different`, `workaround`) and how;
-   - what VisioOne does not provide (`none`), with the linked guide section. Examples: automatic re-routing on deviation, fine-grained offline cache, POI clustering, the "closest" multi-destination strategy;
+   - what VisioOne does not provide (`none`), with its guide reference: the entry's `guide` list when it is not empty, otherwise its appendix heading (`section`) in the guide's API correspondence appendix. Never make up a section number. Examples: automatic re-routing on deviation, fine-grained offline cache, POI clustering, the "closest" multi-destination strategy;
    - for mobile V2 apps: the target is **not a line-by-line translation**. VisioOne has no native SDK: the app embeds VisioOne in a WebView and talks to it through a native↔JS bridge (`mobile-webview.md`). Plan the shell and the bridge first, then each use case.
 
 4. **Migrate in batches**, one use case at a time, using only the mappings from step 2. Leave business logic untouched.
    - Code that becomes useless (`not-applicable`) is removed, and the summary says so.
    - For every `none` symbol, and every `workaround` you could not implement safely, leave a comment instead of inventing code:
-     `// TODO Migration: no VisioOne equivalent for <legacy symbol> — see <guide section>`
+     `// TODO Migration: no VisioOne equivalent for <legacy symbol> — see <guide reference>` (same rule as step 3)
    - Apply the 1.0.6+ rules: the map identifier is `vg_maphash` (no `hash` alias); call `venue.refreshCustomData()` before reading custom data; positions are WGS84 `{ latitude, longitude }`.
+   - Apply the 1.1.0 rules when you carry custom texts or locales over: the UI key `go` is now `go-there`; `maneuvers` needs `enterBuilding` and `exitBuilding`, `detailedInstructions` needs `goUp`, `goDown` and `changeFloor` (all with a `{{ floor }}` placeholder), otherwise the built-in UI shows raw keys. Navigations through several floors produce extra instructions: never port code that relies on instruction indexes or counts. Details: `../integrate-visioone-sdk/references/api-recipes.md` §7.
 
 5. **Validate** with the guide's validation checklist: the project builds, the map loads on the user's real map (`createView()` included), and every `TODO Migration` is listed in the summary.
 

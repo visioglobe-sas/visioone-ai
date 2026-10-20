@@ -384,12 +384,14 @@ let trace: NavigationTrace | undefined;
 function showRoute(origin: POI | string | Position, destination: POI | string | Position) {
   try {
     const navigation = venue.computeNavigation({ origin, destination, type: 'fastest' });
+    clearRoute(); // remove the previous trace first, or it leaks
     trace = venue.createNavigationTrace(navigation);
     view.setCurrentNavigationTrace(trace); // shows the route + the instructions UI, camera to start
   } catch (e) {
     const name = (e as Error).constructor.name;
-    // 'RouteNotFoundError' | 'SourceOutOfLimitError' | 'DestinationOutOfLimitError'
-    // | 'InvalidNavigationRequestError' (e.g. origin === destination) | generic Error (non-navigable POI)
+    // 'InvalidNavigationRequestError': no route, or origin === destination (same class and message)
+    // | 'SourceOutOfLimitError' | 'DestinationOutOfLimitError' | generic Error (non-navigable POI).
+    // 'RouteNotFoundError' is declared but never thrown (1.0.9, 1.1.0): don't rely on it.
   }
 }
 function clearRoute() {
@@ -472,7 +474,8 @@ view.addEventListener('navigationinstructionreached', () => {
 });
 view.navigateToNextInstruction();     // animates dot + camera, switches floor if needed
 view.navigateToPreviousInstruction();
-view.setCurrentNavigationInstruction(nav.instructions[2]);
+const firstFloorChange = nav.instructions.find((i) => i.maneuverType === 'changeFloor'); // never a fixed index
+if (firstFloorChange) view.setCurrentNavigationInstruction(firstFloorChange);
 ```
 
 Gotchas:
@@ -524,7 +527,8 @@ import type { NavigationMarkerContext } from '@visioglobe/visioone/dist/src/Visi
 const renderMarker = (ctx: NavigationMarkerContext): HTMLElement => {
   const el = document.createElement('div');
   el.className = `nav-marker nav-marker--${ctx.kind}`;
-  if (ctx.kind === 'floorChange') el.textContent = ctx.floorChangeDirection === 'down' ? '↓' : '↑';
+  const arrows = { up: '↑', down: '↓', same: '⇄' }; // 'same': same-altitude transition (e.g. elevator door)
+  if (ctx.kind === 'floorChange' && ctx.floorChangeDirection) el.textContent = arrows[ctx.floorChangeDirection];
   return el;
 };
 
@@ -560,10 +564,12 @@ let destination: POI | string = 'B';
 view.addEventListener('navigationtoofarfromtrackedposition', () => {
   const from = view.latestTrackedPosition;
   if (!from) return;
-  const old = view.currentNavigationTrace;
-  const t2 = venue.createNavigationTrace(venue.computeNavigation({ origin: from, destination }));
-  view.setCurrentNavigationTrace(t2);
-  if (old) venue.removeNavigationTrace(old);
+  try {
+    const next = venue.createNavigationTrace(venue.computeNavigation({ origin: from, destination }));
+    view.setCurrentNavigationTrace(next);
+    if (trace) venue.removeNavigationTrace(trace);
+    trace = next; // the `trace` of 4.1: keep it in sync so clearRoute() removes the right one
+  } catch { /* no route from here: keep the current one (see 4.1 for error types) */ }
 });
 ```
 
@@ -923,7 +929,6 @@ the hash in code**. Through 1.0.5 the generic name `hash` could be hijacked by t
 1. `vg_maphash`, not `hash`. Pass a `loaderContainer` in strict TS.
 2. Root typings broken (1.0.9 and 1.1.0): use type-only deep imports. Error classes cannot be imported: use `constructor.name`.
 3. Test `createView` on your real map (`labelSizePolicy` issue since 1.0.6, code unchanged in 1.1.0).
-14. Upgrading a custom locale to 1.1.0: the UI key `go` became `go-there`, and five navigation keys were added (see 7.3).
 4. `goToFloor(poi.floor)` before `goToPOI`. Sync floor UI only from `currentfloorchanged.newFloor`.
 5. POI = container. No name/position fields. Filter non-navigable POIs from route pickers.
 6. Reset sentinels: `color: 'initial'`, `hoverColor/selectionColor: 'default'`.
@@ -935,11 +940,14 @@ the hash in code**. Through 1.0.5 the generic name `hash` could be hijacked by t
 12. No runtime surface creation, no POI clustering, no offline data cache, no "closest" multi-destination strategy.
 13. In mobile WebViews loading from `file://`, ES module imports can fail on CORS: prefer the UMD build
     (`dist/visioone.umd.cjs`) or serve from an HTTP(S) origin.
+14. Upgrading a custom locale to 1.1.0: the UI key `go` became `go-there`, and five navigation keys were added (see 7.3).
 
 <!-- VERIFICATION
 Checked against @visioglobe/visioone 1.1.0, dist/src/ (paths relative to dist/src/VisioOne/ unless noted).
 Re-check 2026-10-14: all ```ts snippets recompiled with tsc 5.6 (strict, skipLibCheck) against 1.1.0: 0 errors;
 negative test still rejects hash, NavigationRequest.displayMode and a wrong createNavigationTrace renderer.
+Re-check 2026-10-20: 4.1, 4.4, 4.6 and 4.8 recompiled (tsc 5.6.3, strict) against 1.1.0: 0 errors.
+No-route error: InvalidNavigationRequestError, RouteNotFoundError never thrown (public migration guide, 1.0.9 and 1.1.0).
 1.1.0 additions: Venue/LoadOptions.d.ts allNavigationAccessible ; View/View.d.ts allNavigationAccessible ;
 Venue/URLParameters.d.ts accessibleNavigation ; Venue/Venue.d.ts navigationMarkerRenderer, createNavigationTrace(navigation, renderer?) ;
 Navigation/NavigationMarkerContext.d.ts kind, from, to, floorChangeDirection, NavigationMarkerRenderer ;

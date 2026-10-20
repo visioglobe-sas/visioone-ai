@@ -251,17 +251,15 @@ export default defineConfig({
 `web/src/main.js` (add to the ESM entry of §1.3):
 
 ```js
-let selectedPoi = null;
-
 window.MapBridge = {
   goToPOI(poiId) {                       // already a JS string: no JSON.parse
     if (!venue || !view) return;
     const poi = venue.pois.find((p) => p.id === poiId);
     if (!poi) return;
-    selectedPoi = poi;
-    view.goToFloor(poi.floor).then(() =>
-      view.goToPOI(poi, { orientation: { pitch: 20 }, padding: { top: 100, right: 100, bottom: 100, left: 100 } }));
-    poi.surfaces.forEach((s) => venue.updateSurface(s, { selectionColor: view.surfaceSelectionColor }));
+    view.selectedPOIs = [poi];           // highlights its surfaces; clear with []
+    (poi.floor ? view.goToFloor(poi.floor) : Promise.resolve())  // floor is optional (outdoor POIs)
+      .then(() => view.goToPOI(poi, { orientation: { pitch: 20 }, padding: { top: 100, right: 100, bottom: 100, left: 100 } }))
+      .catch((err) => window.AndroidBridge?.onMapError(String(err?.message ?? err)));
   },
 };
 
@@ -451,10 +449,18 @@ window.onerror = function (message) { sendToNative('error', { message: 'Uncaught
 
 window.MapBridge = {
   setup: function (hash, baseURL) {
-    if (view) { visioOne.destroyView(view); view = null; }
-    if (venue) { visioOne.unloadVenue(venue); venue = null; }
-    visioOne = VisioOne.createVisioOne();
-    visioOne.loadVenue(baseURL ? { vg_maphash: hash, baseURL: baseURL } : { vg_maphash: hash }, container)
+    // Tear the previous map down completely (both calls return promises) before loading into the
+    // same container, otherwise the old teardown races the new load.
+    var oldView = view, oldVenue = venue, previous = visioOne;
+    view = null; venue = null;
+    Promise.resolve()
+      .then(function () { return oldView ? previous.destroyView(oldView) : null; })
+      .then(function () { return oldVenue ? previous.unloadVenue(oldVenue) : null; })
+      .catch(function () { /* the old map is gone either way */ })
+      .then(function () {
+        visioOne = VisioOne.createVisioOne();
+        return visioOne.loadVenue(baseURL ? { vg_maphash: hash, baseURL: baseURL } : { vg_maphash: hash }, container);
+      })
       .then(function (v) { venue = v; return visioOne.createView(container, venue); })
       .then(function (v) {
         view = v;
@@ -472,7 +478,10 @@ window.MapBridge = {
   goToPOI: function (poiId) {
     if (!venue || !view) return;
     var poi = venue.pois.find(function (p) { return p.id === poiId; });
-    if (poi) view.goToFloor(poi.floor).then(function () { view.goToPOI(poi); });
+    if (!poi) return;
+    (poi.floor ? view.goToFloor(poi.floor) : Promise.resolve())
+      .then(function () { return view.goToPOI(poi); })
+      .catch(function (err) { sendToNative('error', { message: String(err && err.message || err) }); });
   },
 };
 ```
@@ -551,15 +560,20 @@ Page (inline string, ESM from CDN):
       }));
       sendToNative({ type: 'ready' });
     } catch (error) {
-      sendToNative({ type: 'error', data: error instanceof Error ? `${error.name}: ${error.message}` : String(error) });
+      // error.name is always 'Error': the SDK error type is the constructor name (UnauthorizedError, VenueNotFoundError…).
+      sendToNative({ type: 'error', data: error instanceof Error ? `${error.constructor.name}: ${error.message}` : String(error) });
     }
   };
   const goToPOI = async (poiId) => {
     if (!venue || !view) return;
     const poi = venue.pois.find((p) => p.id === poiId);
     if (!poi) return;
-    await view.goToFloor(poi.floor);
-    view.goToPOI(poi);
+    try {
+      if (poi.floor) await view.goToFloor(poi.floor); // floor is optional (outdoor POIs)
+      await view.goToPOI(poi);
+    } catch (error) {
+      sendToNative({ type: 'error', data: String(error?.message ?? error) });
+    }
   };
   const onMessage = (event) => {
     try {
@@ -631,7 +645,8 @@ export function VisioMap({ hash, onPoiClick }: { hash: string; onPoiClick: (pois
   `venue.translator.translatePOI(poi, venue.currentLocale).name` can be empty, so fall back to `poi.id`.
 - **`goToPOI` takes a `POI` object, not an id**, and does not change floor by itself: call
   `view.goToFloor(poi.floor)` first (SDK docs). Unknown ids → silent no-op.
-- To clear a highlight use `venue.updateSurface(surface, { selectionColor: 'default' })` (documented value).
+- Highlight a POI with `view.selectedPOIs = [poi]` and clear it with `view.selectedPOIs = []`. If you override a
+  surface's color with `venue.updateSurface`, revert it with `{ selectionColor: 'default' }` (documented value).
 - The SDK has no pause/resume API: relay the **WebView's own lifecycle** (pause rendering when
   backgrounded). None of the example repos implement this, nor hardware back handling inside the
   WebView: design it yourself.
@@ -677,7 +692,7 @@ export function VisioMap({ hash, onPoiClick }: { hash: string; onPoiClick: (pois
 - `AndroidWebViewController.enableDebugging(true)` must run **before** creating the `WebViewController`.
 - Start the SDK from `onPageFinished` (calling `setup` earlier hits an undefined `MapBridge`).
 - Don't `JSON.parse` arguments in `MapBridge.*`: `jsonEncode` already produced JS literals.
-- Re-calling `setup()` must `destroyView` + `unloadVenue` first.
+- Re-calling `setup()` must `destroyView` + `unloadVenue` first, and wait for both promises before the new `loadVenue`.
 - A malformed channel message must never crash the app: `tryParse` and drop it.
 
 ### React Native
