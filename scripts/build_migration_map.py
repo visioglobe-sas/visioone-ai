@@ -7,7 +7,8 @@ symbol it cites against the TypeScript declarations of the targeted
 Usage:
   build_migration_map.py <correspondance-api.md> <visioone package dir> <output.json>
 
-Exit code 1 if a cited VisioOne symbol is not declared in the package.
+Exit code 1, without writing the output, if a cited VisioOne symbol is not
+declared in the package.
 """
 import json
 import re
@@ -26,7 +27,7 @@ STATUS = {
     "❌": "none",
     "➖": "not-applicable",
 }
-GUIDE_REF = re.compile(r"\*([^*]+)\*\s*(§[\d.]+|fiche \d+)", re.IGNORECASE)
+GUIDE_REF = re.compile(r"\*([^*]+)\*,?\s*(§\d+(?:\.\d+)*|fiche \d+)", re.IGNORECASE)
 CODE = re.compile(r"`([^`]+)`")
 IDENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
@@ -78,30 +79,38 @@ def parse(md_text):
     return entries
 
 
+COMMENT = re.compile(r"/\*.*?\*/|//[^\n]*", re.DOTALL)
+
+
 def declared_identifiers(package_dir):
+    """Identifiers and string literals of the declarations, comments excluded
+    (a word that only appears in a JSDoc comment is not declared)."""
     names = set()
     for f in Path(package_dir).rglob("*.d.ts"):
-        names.update(IDENT.findall(f.read_text(encoding="utf-8")))
+        text = COMMENT.sub(" ", f.read_text(encoding="utf-8"))
+        names.update(IDENT.findall(text))
         # string literal types: event names, enum-like values
-        names.update(re.findall(r"'([A-Za-z0-9_-]+)'", f.read_text(encoding="utf-8")))
-        names.update(re.findall(r'"([A-Za-z0-9_-]+)"', f.read_text(encoding="utf-8")))
+        names.update(re.findall(r"'([A-Za-z0-9_-]+)'", text))
+        names.update(re.findall(r'"([A-Za-z0-9_-]+)"', text))
     return names
 
 
 # Identifiers that are not VisioOne API: variable names from the guide's
 # conventions, JS keywords and standard browser APIs.
 IGNORED = {
-    "visioOne", "venue", "view", "options", "event", "poi", "pois", "floor", "container",
-    "new", "await", "true", "false", "null", "undefined", "const", "of", "id",
-    "URLSearchParams", "addEventListener", "removeEventListener", "dispatchEvent",
+    "visioOne", "venue", "view", "options", "event", "container",
+    "new", "await", "true", "false", "null", "undefined", "const", "of",
+    "try", "URLSearchParams", "addEventListener", "removeEventListener", "dispatchEvent", "once",
     "Promise", "then", "catch", "Array", "filter", "find", "map", "some", "length",
     "latitude", "longitude", "altitude", "x", "y",
     # placeholder names used in the appendix examples
-    "p", "c", "cb", "trace", "params", "valeur", "autrePoi", "poiOuId", "message",
+    "p", "c", "cb", "e", "i", "s", "trace", "params", "valeur", "autrePoi", "poiOuId", "message",
+    "token", "visible",
     # standard JS / native APIs (mobile WebView shell)
     "constructor", "flatMap", "requestAnimationFrame", "WebView", "WKWebView", "onPause", "onResume",
-    # wildcard prefix: `goTo*` stands for goToFloor, goToPOI, goToViewpoint…
-    "goTo",
+    # wildcard prefixes: `goTo*` stands for goToFloor, goToPOI, goToViewpoint…,
+    # `minimum*`/`maximum*` for the camera limits, `update*` for updateSurface, updateLabel…
+    "goTo", "minimum", "maximum", "update",
 }
 
 
@@ -122,9 +131,14 @@ def main():
     md, pkg, out = sys.argv[1:]
     entries = parse(Path(md).read_text(encoding="utf-8"))
     missing = check(entries, declared_identifiers(pkg))
+    version = json.loads((Path(pkg) / "package.json").read_text())["version"]
+    if missing:
+        # Fail before writing: never leave unverified mappings in the output.
+        for ident, where in sorted(missing.items()):
+            print("NOT DECLARED in {}: {}  ({} uses, e.g. {})".format(version, ident, len(where), where[0]))
+        sys.exit(1)
     for e in entries:
         del e["_code"]
-    version = json.loads((Path(pkg) / "package.json").read_text())["version"]
     Path(out).write_text(json.dumps({
         "visioone": version,
         "source": "VisioOne migration guide, API correspondence appendix",
@@ -135,9 +149,6 @@ def main():
         counts.setdefault(e["sdk"], 0)
         counts[e["sdk"]] += 1
     print("entries:", len(entries), counts)
-    for ident, where in sorted(missing.items()):
-        print("NOT DECLARED in {}: {}  ({} uses, e.g. {})".format(version, ident, len(where), where[0]))
-    sys.exit(1 if missing else 0)
 
 
 if __name__ == "__main__":

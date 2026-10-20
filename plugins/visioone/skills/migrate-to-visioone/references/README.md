@@ -4,7 +4,8 @@
 
 - It is **generated** from the API correspondence appendix of the public VisioOne migration guide by `scripts/build_migration_map.py`. Never edit it by hand: fix the guide, then regenerate.
 - The generator checks every VisioOne symbol written as code against the TypeScript declarations of the targeted `@visioglobe/visioone` version, and fails if one is missing.
-- `note` fields are in French, the guide's current language. They will switch to English when the English guide is published.
+- Text copied from the guide is in French, the guide's current language: `note`, `section`, and some `visioone` descriptions. It will switch to English when the English guide is published.
+- `guide` lists the guide sections cited in the note. It is empty when the guide cites none (most entries): use `section` instead.
 
 Entry shape:
 
