@@ -5,15 +5,15 @@
     "url": "https://www.visioglobe.com"
   },
   "metadata": {
-    "description": "Official Visioglobe plugins for AI coding assistants: integrate the VisioOne SDK and migrate from legacy Visioglobe SDKs.",
-    "version": "0.2.1"
+    "description": "Official Visioglobe plugins for AI coding assistants: integrate the VisioOne SDK, migrate from legacy Visioglobe SDKs and prepare bug reports for Visioglobe support.",
+    "version": "0.3.0"
   },
   "plugins": [
     {
       "name": "visioone",
       "source": "./plugins/visioone",
-      "description": "Integrate the VisioOne indoor mapping SDK (@visioglobe/visioone) into a web project, and migrate VisioWeb, VisioWeb Essential and VisioMove Essential V2 apps to VisioOne.",
-      "version": "0.2.1",
+      "description": "Integrate the VisioOne indoor mapping SDK (@visioglobe/visioone) into a web project, migrate VisioWeb, VisioWeb Essential and VisioMove Essential V2 apps to VisioOne, and prepare bug reports for Visioglobe support.",
+      "version": "0.3.0",
       "license": "Apache-2.0",
       "category": "development",
       "keywords": [
@@ -22,7 +22,9 @@
         "indoor-mapping",
         "wayfinding",
         "sdk",
-        "migration"
+        "migration",
+        "bug-report",
+        "support"
       ]
     }
   ]

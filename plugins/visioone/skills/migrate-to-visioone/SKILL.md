@@ -58,3 +58,4 @@ Never use a mapping that is not in `migration-map.json` or the guide. If a legac
 - Never change files before the user has approved the plan (step 3).
 - Never invent a VisioOne API. Check every call against the installed declarations.
 - Never remove legacy code that has no migrated equivalent: comment it with a `TODO Migration` instead.
+- If something looks like a bug in the SDK, the map or `migration-map.json` rather than a misuse, say so and offer the `report-visioone-bug` skill instead of silently working around it.
