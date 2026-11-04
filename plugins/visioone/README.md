@@ -8,7 +8,7 @@ Official Visioglobe plugin to integrate the [VisioOne](https://www.npmjs.com/pac
 
 | Skill | What it does |
 |---|---|
-| `integrate-visioone-sdk` | Adds VisioOne to a web project: installation, a minimal integration module and a usage example. Covers 3D indoor/outdoor maps, POIs, multimodal routing, theming and localization, and embedding the map in a native app through a WebView (Android, iOS, Flutter, React Native). |
+| `integrate-visioone-sdk` | Adds VisioOne to an existing web project or mobile app (WebView), or creates a new web project in an empty folder. It first asks what it cannot detect: where the map goes, the map hash, how the map is accessed, the features and the layout. Then: installation, a minimal integration module and a usage example. Covers 3D indoor/outdoor maps, POIs, multimodal routing, theming and localization, and embedding the map in a native app through a WebView (Android, iOS, Flutter, React Native). |
 | `migrate-to-visioone` | Migrates a VisioWeb, VisioWeb Essential or VisioMove Essential V2 app to VisioOne. It inventories the legacy calls, maps each one to its VisioOne equivalent using the official migration guide, and proposes a plan for your approval before changing any file. |
 | `report-visioone-bug` | Prepares a bug report about the VisioOne SDK, a Visioglobe map or this plugin: checks it is not a misuse, collects the versions, error and a minimal reproduction, and removes tokens and other secrets. You submit the report yourself through [Visioglobe support](https://my.visioglobe.com/support). |
 

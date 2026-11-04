@@ -8,7 +8,7 @@ Official Visioglobe plugins for AI coding assistants. They help you integrate th
 
 | Skill | What it does |
 |---|---|
-| `integrate-visioone-sdk` | Adds VisioOne to a web project: installation, minimal integration module, usage example. |
+| `integrate-visioone-sdk` | Adds VisioOne to an existing web project or mobile app (WebView), or creates a new web project. It first asks what it cannot detect (where the map goes, map hash, map access, features, layout), then installs the SDK, generates a minimal integration module, displays the map and checks that it loads. |
 | `migrate-to-visioone` | Migrates a VisioWeb, VisioWeb Essential or VisioMove Essential V2 app to VisioOne, following the official migration guide. |
 | `report-visioone-bug` | Prepares a bug report about the VisioOne SDK, a Visioglobe map or this plugin, with secrets removed, for you to submit through [Visioglobe support](https://my.visioglobe.com/support). |
 

@@ -1,6 +1,6 @@
 ---
 name: integrate-visioone-sdk
-description: Integrates the VisioOne SDK (Visioglobe) into the current web project — 3D indoor/outdoor maps, POIs, multimodal routing. Use when the user asks to add, integrate or set up VisioOne, the Visioglobe SDK or a Visioglobe map in their project. For migrating an existing VisioWeb, VisioWeb Essential or VisioMove Essential app, use migrate-to-visioone instead.
+description: Integrates the VisioOne SDK (Visioglobe) into an existing web or mobile (WebView) project, or creates a new web project for it — 3D indoor/outdoor maps, POIs, multimodal routing. Use when the user asks to add, integrate or set up VisioOne, the Visioglobe SDK or a Visioglobe map in their project, or to create a new app showing a Visioglobe map. For migrating an existing VisioWeb, VisioWeb Essential or VisioMove Essential app, use migrate-to-visioone instead.
 ---
 
 # Integrating the VisioOne SDK
@@ -37,36 +37,59 @@ Read the relevant section before writing code for a feature. Do not load whole f
 
 ## Steps
 
-1. **Understand the target project**
-   - Detect the package manager (`package.json`: npm, pnpm or yarn) and the framework (vanilla, React, Vue…).
-   - VisioOne is a browser SDK. For a native mobile app (Android, iOS, Flutter, React Native), the supported approach is to embed VisioOne in a WebView with a native↔JS bridge: follow `references/mobile-webview.md`. For any other kind of project, ask for confirmation before going further.
-   - If the project is empty, ask which framework to use.
+1. **Inspect the project, then gather the inputs before writing anything.**
+   - **Inspect first.** If the working directory is a project, detect:
+     - its kind: web (`package.json`) or native (`build.gradle`/`build.gradle.kts`, `*.xcodeproj`, `pubspec.yaml`, React Native);
+     - the package manager (npm, pnpm or yarn), the framework (vanilla, React, Vue…), TypeScript or JavaScript;
+     - how it reads its settings (environment variables, config file);
+     - whether it is a git repository.
 
-2. **Confirm before installing**
-   - State the exact command (`npm install @visioglobe/visioone` or its pnpm/yarn equivalent) and wait for approval.
+     VisioOne is a browser SDK. A native mobile app embeds it in a WebView with a native↔JS bridge: from here on, for a native project, follow `references/mobile-webview.md` wherever the steps below differ. For any other kind of project, ask for confirmation before going further.
+   - **Then ask, in a single message, only what is still missing.** Start the message with what you detected (project, kind, framework, page) so the user can correct it. Skip any question the user already answered in their request. Wait for the answers before going further.
+     - **Where the map goes.** If the working directory is not the right project, ask for its path. Ask where the map should appear: an existing page, route, screen or component (which one, and which element it replaces or sits in), or a new one.
+     - **New project.** If there is no project yet, offer to create one: ask for the folder, which must be empty or not exist yet, and the framework. Propose Vite with TypeScript (vanilla, or the framework the user prefers).
+     - **The map hash** (`vg_maphash`). If the user does not have one, carry on with an empty setting (step 5) and tell them to ask Visioglobe for their map's hash. Never invent or reuse a hash from elsewhere.
+     - **Map access**: whether the map is served by a custom map server (`baseURL`) or needs an authorization token. If the user does not know, assume neither and say so.
+     - **Features**: what the map must do beyond being displayed, e.g. POI search or selection, routing (accessible?), floor selector, markers, UI language, custom data, position tracking. Map each one to its section of `references/api-recipes.md`. Implement only what is asked; the default is display only.
+     - **Layout**: full page or embedded in an existing layout, and the size it gets (the container needs an explicit height).
 
-3. **Install the SDK**
+2. **Confirm before running any command.** State the exact commands, in order, and wait for approval:
+   - **New project**: the scaffolding command with an explicit version and every option on the command line, so that it does not prompt, e.g. `npm create vite@<version> <folder> -- --template vanilla-ts` (check the current version with `npm view create-vite version`). Then, inside the new folder, the install of the template's dependencies (`npm install`) and `git init` if the user wants a repository. If the scaffolder still prompts, ask the user to run it themselves.
+   - **Web project**: `npm install @visioglobe/visioone` or its pnpm/yarn equivalent, run in the project folder (the new folder for a new project).
+   - **Native project**: how the SDK build reaches the app, as `references/mobile-webview.md` §1.2 gives it for the platform (a Vite web bundle for Android, the vendored UMD build for iOS and Flutter).
 
-4. **Generate a minimal integration module** (e.g. `src/lib/visioone.ts`) that follows the project's existing conventions:
+3. **Create the project if needed, then install the SDK**, exactly as approved.
 
-   ```ts
-   import { createVisioOne } from '@visioglobe/visioone';
+4. **Install any other package a chosen feature needs** (e.g. a router for a new page) only after stating it and getting approval.
 
-   const visioOne = createVisioOne();
-   // Read the hash the way the project reads its other settings (Vite shown here).
-   const venue = await visioOne.loadVenue({ vg_maphash: import.meta.env.VITE_VISIOONE_MAP_HASH }, container);
-   const view = await visioOne.createView(container, venue);
-   ```
+5. **Generate a minimal integration module.**
+   - **Web project** (e.g. `src/lib/visioone.ts`), following the project's existing conventions:
 
-   The container needs an explicit height, otherwise nothing is visible.
+     ```ts
+     import { createVisioOne } from '@visioglobe/visioone';
 
-   - Read the map hash from an environment variable, never hard-code it. Add the variable to `.env.example` if that file exists.
+     const visioOne = createVisioOne();
+     // Read the hash the way the project reads its other settings (Vite shown here).
+     const venue = await visioOne.loadVenue({ vg_maphash: import.meta.env.VITE_VISIOONE_MAP_HASH }, container);
+     const view = await visioOne.createView(container, venue);
+     ```
+
+     The container needs an explicit height, otherwise nothing is visible.
+
+     Read the map hash from an environment variable, never hard-code it. Put the user's hash in a local environment file that is never committed (e.g. `.env.local` with Vite). In a git repository, check with `git check-ignore` that the file is ignored, and add it to `.gitignore` if not. Without a repository, check that the project's `.gitignore` covers it (Vite templates ignore `*.local`). Add the variable, without its value, to `.env.example`, creating that file in a new project.
+   - **Native project**: the host page and the bridge from `references/mobile-webview.md` §1.3 to §3. The native side passes the hash to the page in its URL (`?vg_maphash=`). Read it from where the project keeps its other settings, out of committed source when possible (e.g. `local.properties` on Android, an ignored `.xcconfig` on iOS).
    - Only add `baseURL` (custom map server) or an authorization token if the user says their map needs them.
+   - Add the features chosen in step 1, following their `references/api-recipes.md` sections.
    - Keep the module thin: expose what the user needs (load, view, POIs, routing). No extra abstraction layer.
 
-5. **Add a minimal usage example** (a page or component that displays the map), based on the official samples or the demo app.
+6. **Display the map where the user asked** in step 1, in the existing page, screen or component, or in a new one, based on the official samples, the demo app or the example repo for the platform.
 
-6. **Summarize**: what was installed and generated, what the user still has to provide (map hash, etc.), and any limitation you hit.
+7. **Check that it works**, on the user's real map, `createView()` included (see "Known pitfalls"):
+   - **Web project**: build it, then offer to start the dev server and have the user confirm that the map is displayed.
+   - **Native project**: on Android, rebuild the web bundle (`npm run build` into `assets/www`) before the Gradle build, which does not run it. Then have the user run the app on a device or emulator and confirm the map is displayed.
+   - Without a map hash, say that this check is still to do.
+
+8. **Summarize**: what was installed and generated, where the map is displayed, what the user still has to provide (map hash, etc.), and any limitation you hit.
 
 ## Known pitfalls (VisioOne 1.0.6 → 1.1.0)
 
@@ -83,6 +106,7 @@ Read the relevant section before writing code for a feature. Do not load whole f
 ## Guardrails
 
 - Never commit a map hash or a token in clear text.
-- Never install any package other than `@visioglobe/visioone` for this SDK.
+- Never install any package the user has not approved. For the map itself, the only SDK package is `@visioglobe/visioone`: no wrapper or third-party VisioOne package.
+- Never write into a non-empty folder when creating a new project.
 - If the documentation is incomplete or unreachable, say so explicitly rather than improvising an API.
 - If something looks like a bug in the SDK or the map rather than a misuse, say so and offer the `report-visioone-bug` skill instead of silently working around it.
