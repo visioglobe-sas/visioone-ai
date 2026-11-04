@@ -46,6 +46,7 @@ Never use a mapping that is not in `migration-map.json` or the guide. If a legac
    - Code that becomes useless (`not-applicable`) is removed, and the summary says so.
    - For every `none` symbol, and every `workaround` you could not implement safely, leave a comment instead of inventing code:
      `// TODO Migration: no VisioOne equivalent for <legacy symbol> — see <guide reference>` (same rule as step 3)
+   - Clearing the current route: when a mapping says `view.removeCurrentNavigationTrace()`, call it only if `view.currentNavigationTrace` is set (it throws when no route is shown), and drop the `venue.removeNavigationTrace(trace)` some entries pair it with: `removeCurrentNavigationTrace()` already destroys the trace, and removing it again throws. Follow `../integrate-visioone-sdk/references/api-recipes.md` §4.1 and §12, pitfall 8.
    - Apply the 1.0.6+ rules: the map identifier is `vg_maphash` (no `hash` alias); call `venue.refreshCustomData()` before reading custom data; positions are WGS84 `{ latitude, longitude }`.
    - Apply the 1.1.0 rules when you carry custom texts or locales over: the UI key `go` is now `go-there`; `maneuvers` needs `enterBuilding` and `exitBuilding`, `detailedInstructions` needs `goUp`, `goDown` and `changeFloor` (all with a `{{ floor }}` placeholder), otherwise the built-in UI shows raw keys. Navigations through several floors produce extra instructions: never port code that relies on instruction indexes or counts. Details: `../integrate-visioone-sdk/references/api-recipes.md` §7.
 
