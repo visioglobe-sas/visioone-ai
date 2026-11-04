@@ -384,9 +384,8 @@ let trace: NavigationTrace | undefined;
 function showRoute(origin: POI | string | Position, destination: POI | string | Position) {
   try {
     const navigation = venue.computeNavigation({ origin, destination, type: 'fastest' });
-    clearRoute(); // remove the previous trace first, or it leaks
     trace = venue.createNavigationTrace(navigation);
-    view.setCurrentNavigationTrace(trace); // shows the route + the instructions UI, camera to start
+    view.setCurrentNavigationTrace(trace); // replaces and destroys the previous route; shows the route + the instructions UI, camera to start
   } catch (e) {
     const name = (e as Error).constructor.name;
     // 'InvalidNavigationRequestError': no route, or origin === destination (same class and message)
@@ -395,8 +394,9 @@ function showRoute(origin: POI | string | Position, destination: POI | string | 
   }
 }
 function clearRoute() {
-  view.removeCurrentNavigationTrace();
-  if (trace) venue.removeNavigationTrace(trace); // destroys the object; skip it and it leaks
+  // Also destroys the trace: never call venue.removeNavigationTrace() on it afterwards.
+  // Throws "Cannot remove Navigation as there is no Navigation currently running." when no route is shown.
+  if (view.currentNavigationTrace) view.removeCurrentNavigationTrace();
   trace = undefined;
 }
 ```
@@ -404,8 +404,11 @@ function clearRoute() {
 Gotchas:
 - `origin`/`destination` accept a `POI`, a POI id, or a `Position` (snapped to the nearest routing edge).
   Pass resolved POIs to tell "unknown id" apart from "no route".
-- Only one *current* navigation at a time. `createNavigationTrace` alone renders a **preview**. Remove
-  previews you no longer need with `removeNavigationTrace(trace)` (some docs wrongly pass the request).
+- Only one *current* navigation at a time. `setCurrentNavigationTrace` and `removeCurrentNavigationTrace`
+  destroy the previous current trace themselves (they call `venue.removeNavigationTrace` on it): calling
+  `removeNavigationTrace` on it again throws `POINotFoundError` "Cannot remove Navigation as it is unregistered."
+- `createNavigationTrace` alone renders a **preview**. Remove previews you no longer need, and never made
+  current, with `venue.removeNavigationTrace(trace)` (some docs wrongly pass the request).
 - Non-navigable POIs (floor anchors, decorative icon/model POIs) throw an untyped
   `"Cannot get node as RoutingSolver returned undefined."`. Filter pickers.
 - Request options: `type` (`'fastest'` default | `'shortest'`), `isAccessible`, `firstNodeAsIntersection`
@@ -566,9 +569,8 @@ view.addEventListener('navigationtoofarfromtrackedposition', () => {
   if (!from) return;
   try {
     const next = venue.createNavigationTrace(venue.computeNavigation({ origin: from, destination }));
-    view.setCurrentNavigationTrace(next);
-    if (trace) venue.removeNavigationTrace(trace);
-    trace = next; // the `trace` of 4.1: keep it in sync so clearRoute() removes the right one
+    view.setCurrentNavigationTrace(next); // replaces and destroys the previous route
+    trace = next; // the `trace` of 4.1
   } catch { /* no route from here: keep the current one (see 4.1 for error types) */ }
 });
 ```
@@ -933,7 +935,9 @@ the hash in code**. Through 1.0.5 the generic name `hash` could be hijacked by t
 5. POI = container. No name/position fields. Filter non-navigable POIs from route pickers.
 6. Reset sentinels: `color: 'initial'`, `hoverColor/selectionColor: 'default'`.
 7. Labels: always set `height`, and update `width` + `height` together. Rotation is create-only.
-8. Remove navigation with **both** `view.removeCurrentNavigationTrace()` and `venue.removeNavigationTrace(trace)`.
+8. Remove the current route with `view.removeCurrentNavigationTrace()` alone, and only if `view.currentNavigationTrace` is set
+   (it throws when no route is shown). It destroys the trace, as `setCurrentNavigationTrace()` does with the route it replaces:
+   never call `venue.removeNavigationTrace()` on a trace that was current (it throws). That call is for previews only.
 9. `refreshCustomData()` before `getPOICustomData`, and catch its rejection.
 10. `allowTracking = true` before `injectTrackedPosition`. There is no automatic reroute: handle `navigationtoofarfromtrackedposition`.
 11. Runtime locales are not persisted and never translate map content.
@@ -1026,6 +1030,7 @@ DROPPED / CORRECTED (used in docs, absent from or different in 1.0.9):
 - NavigationRequest.displayMode / NavigationRequestMultiDestination.displayMode (Navigation.md) -> absent
 - NavigationTrace.color / overlayColor / inactiveColor / inactiveOverlayColor (Navigation.md) -> absent; use NavigationTraceUpdateOptions
 - venue.removeNavigationTrace(navigationRequest) (Navigation.md) -> takes a NavigationTrace
+- removeCurrentNavigationTrace() + removeNavigationTrace(sameTrace) (migration guide) -> the first already destroys the trace, the second throws (1.1.0 source and Chrome, 2026-11-04)
 - LineCreateOptions.inactiveColor (Venue/POIs/Line.md) -> absent (commented out in .d.ts)
 - Translator.createCategoryLocaleEntry (Conventions.md) -> absent
 - hoverColor: 'initial' (Conventions.md) -> documented sentinel is 'default' for hoverColor/selectionColor; 'initial' only for color (compiles anyway since Color = string)

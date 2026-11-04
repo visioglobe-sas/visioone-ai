@@ -45,7 +45,7 @@ Read the relevant section before writing code for a feature. Do not load whole f
      - whether it is a git repository.
 
      VisioOne is a browser SDK. A native mobile app embeds it in a WebView with a native↔JS bridge: from here on, for a native project, follow `references/mobile-webview.md` wherever the steps below differ. For any other kind of project, ask for confirmation before going further.
-   - **Then ask, in a single message, only what is still missing.** Start the message with what you detected (project, kind, framework, page) so the user can correct it. Skip any question the user already answered in their request. Wait for the answers before going further.
+   - **Then ask, in a single message, only what is still missing.** Start the message with what you detected (project, kind, framework, page) so the user can correct it, even when there is nothing left to ask. Skip any question the user already answered in their request. If you ask questions, wait for the answers before going further; if not, go on to step 2 in the same message.
      - **Where the map goes.** If the working directory is not the right project, ask for its path. Ask where the map should appear: an existing page, route, screen or component (which one, and which element it replaces or sits in), or a new one.
      - **New project.** If there is no project yet, offer to create one: ask for the folder, which must be empty or not exist yet, and the framework. Propose Vite with TypeScript (vanilla, or the framework the user prefers).
      - **The map hash** (`vg_maphash`). If the user does not have one, carry on with an empty setting (step 5) and tell them to ask Visioglobe for their map's hash. Never invent or reuse a hash from elsewhere.
@@ -53,8 +53,9 @@ Read the relevant section before writing code for a feature. Do not load whole f
      - **Features**: what the map must do beyond being displayed, e.g. POI search or selection, routing (accessible?), floor selector, markers, UI language, custom data, position tracking. Map each one to its section of `references/api-recipes.md`. Implement only what is asked; the default is display only.
      - **Layout**: full page or embedded in an existing layout, and the size it gets (the container needs an explicit height).
 
-2. **Confirm before running any command.** State the exact commands, in order, and wait for approval:
+2. **Confirm before running any command.** Once the inputs of step 1 are known, state the exact commands, in order, and wait for the user's explicit approval. The request to integrate VisioOne is not that approval, even when it gives every input. Read-only checks (`node --version`, `npm view`, `git check-ignore`, listing files) need no approval. If there is nothing to run (the SDK is already installed), say so and go on.
    - **New project**: the scaffolding command with an explicit version and every option on the command line, so that it does not prompt, e.g. `npm create vite@<version> <folder> -- --template vanilla-ts` (check the current version with `npm view create-vite version`). Then, inside the new folder, the install of the template's dependencies (`npm install`) and `git init` if the user wants a repository. If the scaffolder still prompts, ask the user to run it themselves.
+     Before proposing it, compare `node --version` with the `engines` range of that `create-vite` version (`npm view create-vite@<version> engines`) and of the Vite its templates install (normally the latest: `npm view vite engines`). If Node is too old, say so and propose either upgrading Node or an older `create-vite` major whose Vite supports it. After the install, check the installed Vite's `engines` again before building.
    - **Web project**: `npm install @visioglobe/visioone` or its pnpm/yarn equivalent, run in the project folder (the new folder for a new project).
    - **Native project**: how the SDK build reaches the app, as `references/mobile-webview.md` §1.2 gives it for the platform (a Vite web bundle for Android, the vendored UMD build for iOS and Flutter).
 
@@ -106,7 +107,7 @@ Read the relevant section before writing code for a feature. Do not load whole f
 ## Guardrails
 
 - Never commit a map hash or a token in clear text.
-- Never install any package the user has not approved. For the map itself, the only SDK package is `@visioglobe/visioone`: no wrapper or third-party VisioOne package.
+- Never install any package the user has not approved. A request to add or integrate VisioOne is not approval to install: wait for an explicit yes on the commands of step 2. For the map itself, the only SDK package is `@visioglobe/visioone`: no wrapper or third-party VisioOne package.
 - Never write into a non-empty folder when creating a new project.
 - If the documentation is incomplete or unreachable, say so explicitly rather than improvising an API.
 - If something looks like a bug in the SDK or the map rather than a misuse, say so and offer the `report-visioone-bug` skill instead of silently working around it.

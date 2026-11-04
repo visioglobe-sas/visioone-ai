@@ -213,7 +213,8 @@ Pitfalls:
   message, otherwise native shows an infinite spinner. RN additionally captures the SDK's
   `console.warn('VisioOne error:', err)` during load because the thrown error is a generic
   "Cannot load the venue"; Flutter adds `window.onerror` → `error`.
-- SDK calls that can throw (`computeNavigation`, `createPOI`, `setCurrentLocale`, `createLabel`, ...):
+- SDK calls that can throw (`computeNavigation`, `createPOI`, `setCurrentLocale`, `createLabel`,
+  `removeCurrentNavigationTrace` when no route is shown, ...):
   `try/catch` in JS and report `{status:'error', message}` / `onNavigationError(msg)`.
 - Native side: log `evaluateJavaScript` completion errors (iOS); wrap `runJavaScript` in `try/catch`
   (Flutter `_run`); parse incoming JSON defensively.
