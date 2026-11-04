@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this repository.
 
 ## What this repository is
 
-A Claude Code plugin marketplace (`.claude-plugin/marketplace.json`) publishing one plugin, `visioone` (`plugins/visioone/`), with two skills: `integrate-visioone-sdk` and `migrate-to-visioone`. This repository is meant to be **public**.
+A Claude Code plugin marketplace (`.claude-plugin/marketplace.json`) publishing one plugin, `visioone` (`plugins/visioone/`), with three skills: `integrate-visioone-sdk`, `migrate-to-visioone` and `report-visioone-bug`. Bug reports go to Visioglobe support (my.visioglobe.com/support) only: the skill drafts them, it never submits or posts them. This repository is meant to be **public**.
 
 ## Rules
 

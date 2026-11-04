@@ -71,7 +71,7 @@ Read the relevant section before writing code for a feature. Do not load whole f
 ## Known pitfalls (VisioOne 1.0.6 → 1.1.0)
 
 - **The map identifier is `vg_maphash`** since 1.0.6, both as a `loadVenue()` option and as a URL parameter (`?vg_maphash=...`). There is no alias: `loadVenue({ hash })` fails with `Cannot load the venue`. Older code samples still use `hash`.
-- **`createView()` can fail on some maps** (since 1.0.6; the code involved is unchanged in 1.1.0) with `TypeError: Cannot read properties of undefined (reading 'labelSizePolicy')` even though `loadVenue()` succeeded. Always test `createView()` against the user's real map. If this error occurs, tell the user to contact Visioglobe. Do not try to work around it in code.
+- **`createView()` can fail on some maps** (since 1.0.6; the code involved is unchanged in 1.1.0) with `TypeError: Cannot read properties of undefined (reading 'labelSizePolicy')` even though `loadVenue()` succeeded. Always test `createView()` against the user's real map. If this error occurs, offer to prepare a bug report for Visioglobe with the `report-visioone-bug` skill. Do not try to work around it in code.
 - **TypeScript typing**: the package root types are incomplete (1.0.9 and 1.1.0) (`createVisioOne()` resolves to `any`, other types are not exported from the root). Use type-only deep imports as shown in `references/api-recipes.md` section 0. The declarations also type a second `loadVenue` parameter (`loaderContainer: HTMLElement`) as non-optional, even though a single argument works at runtime: pass the map container.
 - **Error classes are not exported**: `instanceof` checks are impossible, compare `error.constructor.name` instead.
 - **`view.goToFloor(...)` is optional** since 1.0.6 but still the way to choose the starting floor.
@@ -85,3 +85,4 @@ Read the relevant section before writing code for a feature. Do not load whole f
 - Never commit a map hash or a token in clear text.
 - Never install any package other than `@visioglobe/visioone` for this SDK.
 - If the documentation is incomplete or unreachable, say so explicitly rather than improvising an API.
+- If something looks like a bug in the SDK or the map rather than a misuse, say so and offer the `report-visioone-bug` skill instead of silently working around it.

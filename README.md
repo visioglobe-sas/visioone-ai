@@ -10,8 +10,9 @@ Official Visioglobe plugins for AI coding assistants. They help you integrate th
 |---|---|
 | `integrate-visioone-sdk` | Adds VisioOne to a web project: installation, minimal integration module, usage example. |
 | `migrate-to-visioone` | Migrates a VisioWeb, VisioWeb Essential or VisioMove Essential V2 app to VisioOne, following the official migration guide. |
+| `report-visioone-bug` | Prepares a bug report about the VisioOne SDK, a Visioglobe map or this plugin, with secrets removed, for you to submit through [Visioglobe support](https://my.visioglobe.com/support). |
 
-Both target `@visioglobe/visioone` **1.1.0**.
+All three skills target `@visioglobe/visioone` **1.1.0**.
 
 ## Install (Claude Code)
 
@@ -20,14 +21,14 @@ Both target `@visioglobe/visioone` **1.1.0**.
 /plugin install visioone@visioone-ai
 ```
 
-Then ask Claude, for example: *"Integrate VisioOne in this project"* or *"Migrate this VisioWeb app to VisioOne"*.
+Then ask Claude, for example: *"Integrate VisioOne in this project"*, *"Migrate this VisioWeb app to VisioOne"* or *"Report this VisioOne bug to Visioglobe"*.
 
 ## Documentation
 
 - VisioOne documentation: https://my.visioglobe.com/docs/VisioOne/docs/index.html
 - API reference: https://my.visioglobe.com/docs/VisioOne/APIdocs/index.html
 - Example integration repos: [Vue 3](https://github.com/visioglobe-sas/VisioOneMeetVueJS), [Android](https://github.com/visioglobe-sas/VisioOneMeetAndroid), [iOS](https://github.com/visioglobe-sas/VisioOneMeetIos), [Flutter](https://github.com/visioglobe-sas/VisioOneMeetFlutter), [React Native](https://github.com/visioglobe-sas/VisioOneMeetReactNative)
-- Support: https://my.visioglobe.com/support
+- Support and bug reports: https://my.visioglobe.com/support (the `report-visioone-bug` skill drafts the report)
 
 ## License
 
