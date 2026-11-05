@@ -1,3 +1,5 @@
+<img src="assets/icon.png" alt="VisioOne plugin icon" width="96" align="right">
+
 # VisioOne
 
 Official Visioglobe plugin to integrate the [VisioOne](https://www.npmjs.com/package/@visioglobe/visioone) indoor mapping SDK into your project, and to migrate existing apps from legacy Visioglobe SDKs to VisioOne.
