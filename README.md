@@ -1,3 +1,5 @@
+<img src="plugins/visioone/assets/icon.png" alt="VisioOne plugin icon" width="96" align="right">
+
 # VisioOne AI plugins
 
 Official Visioglobe plugins for AI coding assistants. They help you integrate the [VisioOne](https://www.npmjs.com/package/@visioglobe/visioone) indoor mapping SDK into your project, and migrate existing apps from legacy Visioglobe SDKs.
